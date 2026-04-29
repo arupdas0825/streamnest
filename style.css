@@ -83,10 +83,27 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 0.5rem;
   letter-spacing: -2px;
   animation: gradientFlow 5s linear infinite;
   text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.brand-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.brand-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05);
+  animation: float 4s ease-in-out infinite alternate;
+  object-fit: cover;
 }
 
 .tagline { font-size: 1.2rem; color: var(--text-dim); margin-bottom: 3rem; font-weight: 300; }
