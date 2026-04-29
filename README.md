@@ -42,7 +42,7 @@ All media is handled locally via the [File API](https://developer.mozilla.org/en
 ## Live Demo
 
 ```
-https://streamnest.vercel.app
+https://streamnest-kappa.vercel.app/
 ```
 
 ---
