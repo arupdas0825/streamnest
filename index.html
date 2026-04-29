@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamNest Pro | Browser-native cinematic player</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
+</head>
+<body>
+  
+  <div id="landing-screen" class="active">
+    <canvas id="ambient-canvas"></canvas>
+    <div class="landing-content">
+      <h1 class="logo">StreamNest</h1>
+      <p class="tagline">A cinema that lives in your browser</p>
+      
+      <div id="drop-zone-wrapper" style="perspective: 1000px;">
+        <div id="drop-zone">
+          <span class="material-symbols-rounded drop-icon">cloud_upload</span>
+          <h3>Drag & Drop media here</h3>
+          <p>Supports MP4, WebM, MKV + SRT/VTT</p>
+          
+          <label class="btn-primary">
+            Browse Files
+            <input type="file" id="landing-file-input" accept="video/*,audio/*,.mkv,.srt,.vtt" multiple />
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="player-screen">
+    <div class="video-container" id="video-container">
+      <video id="main-video" crossorigin="anonymous"></video>
+      
+      <div id="subtitle-container"></div>
+      
+      <div class="controls-overlay idle" id="controls-overlay">
+        
+        <div class="top-bar">
+          <button class="icon-btn" id="btn-back" title="Back to Home"><span class="material-symbols-rounded">arrow_back</span></button>
+          <h2 id="video-title">No Video Loaded</h2>
+        </div>
+
+        <div class="center-controls" id="center-play-overlay">
+          <button class="huge-icon-btn" id="btn-center-play"><span class="material-symbols-rounded">play_arrow</span></button>
+        </div>
+
+        <div class="bottom-bar">
+          <div class="progress-container" id="progress-container">
+            <div class="progress-bg"></div>
+            <div class="progress-buffer" id="progress-buffer"></div>
+            <div class="progress-fill" id="progress-fill"></div>
+            <div class="progress-thumb" id="progress-thumb"></div>
+            <div class="progress-tooltip" id="progress-tooltip">00:00</div>
+          </div>
+          
+          <div class="controls-row">
+            <div class="controls-left">
+              <button class="icon-btn" id="btn-play"><span class="material-symbols-rounded">play_arrow</span></button>
+              
+              <div class="volume-group">
+                <button class="icon-btn" id="btn-mute"><span class="material-symbols-rounded">volume_up</span></button>
+                <div class="volume-slider-container">
+                  <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1" />
+                </div>
+              </div>
+              
+              <div class="time-display">
+                <span id="time-current">00:00</span> / <span id="time-duration">00:00</span>
+              </div>
+            </div>
+            
+            <div class="controls-right">
+              <button class="icon-btn text-btn" id="btn-speed">1x</button>
+              <button class="icon-btn" id="btn-screenshot" title="Screenshot"><span class="material-symbols-rounded">photo_camera</span></button>
+              <button class="icon-btn" id="btn-subtitle" title="Toggle Subtitles"><span class="material-symbols-rounded" id="sub-icon">subtitles_off</span></button>
+              <label class="icon-btn" title="Add Subtitle">
+                <span class="material-symbols-rounded">note_add</span>
+                <input type="file" id="add-sub-input" accept=".srt,.vtt" style="display:none;" />
+              </label>
+              <button class="icon-btn" id="btn-pip" title="Picture in Picture"><span class="material-symbols-rounded">picture_in_picture_alt</span></button>
+              <button class="icon-btn" id="btn-fullscreen" title="Fullscreen"><span class="material-symbols-rounded">fullscreen</span></button>
+              <button class="icon-btn" id="btn-settings" title="Settings"><span class="material-symbols-rounded">settings</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings-modal" class="hidden">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h3>Pro Settings</h3>
+        <button class="icon-btn" id="btn-close-settings"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      
+      <div class="settings-tabs">
+        <button class="tab-btn active" data-tab="audio">Audio EQ</button>
+        <button class="tab-btn" data-tab="subtitle">Subtitles</button>
+        <button class="tab-btn" data-tab="theme">Theme</button>
+        <button class="tab-btn" data-tab="tracks">Tracks</button>
+      </div>
+      
+      <div class="tab-content active" id="tab-audio">
+        <div class="eq-container">
+          <div class="eq-slider-col"><input type="range" class="eq-band" data-index="0" min="-12" max="12" value="0" orient="vertical" /><label>32</label></div>
+          <div class="eq-slider-col"><input type="range" class="eq-band" data-index="1" min="-12" max="12" value="0" orient="vertical" /><label>64</label></div>
+          <div class="eq-slider-col"><input type="range" class="eq-band" data-index="2" min="-12" max="12" value="0" orient="vertical" /><label>125</label></div>
+          <div class="eq-slider-col"><input type="range" class="eq-band" data-index="3" min="-12" max="12" value="0" orient="vertical" /><label>250</label></div>
+          <div class="eq-slider-col"><input type="range" class="eq-band" data-index="4" min="-12" max="12" value="0" orient="vertical" /><label>500</label></div>
+          <div class="eq-slider-col"><input type="range" class="eq-band" data-index="5" min="-12" max="12" value="0" orient="vertical" /><label>1k</label></div>
+          <div class="eq-slider-col"><input type="range" class="eq-band" data-index="6" min="-12" max="12" value="0" orient="vertical" /><label>2k</label></div>
+          <div class="eq-slider-col"><input type="range" class="eq-band" data-index="7" min="-12" max="12" value="0" orient="vertical" /><label>4k</label></div>
+          <div class="eq-slider-col"><input type="range" class="eq-band" data-index="8" min="-12" max="12" value="0" orient="vertical" /><label>8k</label></div>
+          <div class="eq-slider-col"><input type="range" class="eq-band" data-index="9" min="-12" max="12" value="0" orient="vertical" /><label>16k</label></div>
+        </div>
+        <div class="audio-fx">
+           <div class="fx-row"><label>Bass Boost</label><input type="range" id="fx-bass" min="-10" max="20" value="0"></div>
+           <div class="fx-row"><label>Treble</label><input type="range" id="fx-treble" min="-10" max="20" value="0"></div>
+           <div class="fx-row"><label>Clarity</label><input type="range" id="fx-clarity" min="0" max="20" value="0"></div>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="tab-subtitle">
+        <div class="fx-row"><label>Font Size</label><input type="range" id="sub-size" min="16" max="48" value="24"></div>
+        <div class="fx-row"><label>Text Color</label><input type="color" id="sub-color" value="#ffffff"></div>
+        <div class="fx-row"><label>Background Opacity</label><input type="range" id="sub-bg-opacity" min="0" max="1" step="0.1" value="0.65"></div>
+        <div class="fx-row"><label>Bottom Offset</label><input type="range" id="sub-pos" min="20" max="300" value="100"></div>
+      </div>
+      
+      <div class="tab-content" id="tab-theme">
+        <div class="theme-presets">
+          <button class="theme-btn" data-theme="cyberpunk" style="--tbg:#00f0ff;">Cyberpunk</button>
+          <button class="theme-btn" data-theme="neon" style="--tbg:#ff0055;">Neon Red</button>
+          <button class="theme-btn" data-theme="matrix" style="--tbg:#00ff41;">Matrix Green</button>
+          <button class="theme-btn" data-theme="gold" style="--tbg:#ffd700;">Golden Cinema</button>
+          <button class="theme-btn" data-theme="purple" style="--tbg:#b700ff;">Purple Haze</button>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-tracks">
+        <div class="fx-row">
+          <label>Load External Audio</label>
+          <label class="btn-primary" style="padding:6px 12px; font-size:12px;">
+            Browse
+            <input type="file" id="add-audio-track-input" accept="audio/*" multiple style="display:none;" />
+          </label>
+        </div>
+        <hr style="border-color: var(--glass-border); margin:10px 0;">
+        <p style="font-size:12px; color:var(--text-dim); margin-bottom:10px;">
+          MKV multi-audio is often not supported by browsers natively. You can upload external audio tracks here to sync with the video.
+        </p>
+        <div id="audio-tracks-list" class="tracks-list">No additional audio tracks detected.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
