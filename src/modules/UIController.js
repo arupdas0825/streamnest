@@ -65,12 +65,18 @@ export class UIController {
       this.btnCenterPlay.innerHTML = '<span class="material-symbols-rounded">pause</span>';
       this.playerContainer.classList.remove('paused');
       this.audioCore.init(); // Initialize audio context on first play!
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+      }
     });
     this.vc.on('pause', () => {
       this.btnPlay.innerHTML = '<span class="material-symbols-rounded">play_arrow</span>';
       this.btnCenterPlay.innerHTML = '<span class="material-symbols-rounded">play_arrow</span>';
       this.playerContainer.classList.add('paused');
       this.showControls();
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
     });
     this.vc.on('timeupdate', (time) => {
       this.timeCurrent.textContent = this.formatTime(time);
@@ -102,6 +108,21 @@ export class UIController {
   }
 
   bindUIEvents() {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', async () => {
+        await this.vc.video.play();
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        this.vc.pause();
+      });
+      navigator.mediaSession.setActionHandler('seekbackward', () => {
+        this.vc.seek(this.vc.state.currentTime - 10);
+      });
+      navigator.mediaSession.setActionHandler('seekforward', () => {
+        this.vc.seek(this.vc.state.currentTime + 10);
+      });
+    }
+
     this.btnPlay.addEventListener('click', () => this.vc.togglePlay());
     this.btnCenterPlay.addEventListener('click', () => this.vc.togglePlay());
     this.vc.video.addEventListener('click', () => this.vc.togglePlay());
@@ -177,6 +198,10 @@ export class UIController {
 
     this.btnBack.addEventListener('click', () => {
       this.vc.unload();
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'none';
+        navigator.mediaSession.metadata = null;
+      }
       if (this.currentVideoUrl) {
         URL.revokeObjectURL(this.currentVideoUrl);
         this.currentVideoUrl = null;
@@ -348,6 +373,15 @@ export class UIController {
       this.landing.classList.remove('active');
       this.pe.stop();
       this.landingFileInput.value = '';
+      
+      this.vc.video.tabIndex = -1;
+      this.vc.video.focus();
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: videoFile.name,
+          artist: 'StreamNest',
+        });
+      }
     }
     
     if (subFile) {
