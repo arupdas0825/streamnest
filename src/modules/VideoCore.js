@@ -73,6 +73,25 @@ export class VideoCore {
   pause() { this.video.pause(); }
   togglePlay() { this.video.paused ? this.play() : this.pause(); }
   
+  unload() {
+    this.pause();
+    this.video.removeAttribute("src");
+    this.video.load();
+    this.state.currentTime = 0;
+    
+    // Clean up external audios
+    if (this.externalAudios) {
+      this.externalAudios.forEach(t => {
+        t.element.pause();
+        t.element.removeAttribute("src");
+        t.element.load();
+        if (t.url) URL.revokeObjectURL(t.url);
+      });
+      this.externalAudios = [];
+    }
+    this.activeExternalAudio = null;
+  }
+  
   seek(time) { 
     this.video.currentTime = Math.max(0, Math.min(time, this.state.duration)); 
     if (this.activeExternalAudio) {

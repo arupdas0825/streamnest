@@ -158,6 +158,7 @@ export class UIController {
       this.btnSubtitle.classList.toggle('active', enabled);
     });
 
+    this.addSubInput.addEventListener('click', () => { this.addSubInput.value = ''; });
     this.addSubInput.addEventListener('change', (e) => {
       if (e.target.files.length) {
         this.subEngine.loadSubtitle(e.target.files[0]);
@@ -175,13 +176,29 @@ export class UIController {
     this.btnCloseSettings.addEventListener('click', () => this.settingsModal.classList.add('hidden'));
 
     this.btnBack.addEventListener('click', () => {
-      this.vc.pause();
+      this.vc.unload();
+      if (this.currentVideoUrl) {
+        URL.revokeObjectURL(this.currentVideoUrl);
+        this.currentVideoUrl = null;
+      }
+      this.subEngine.clear();
+      this.subEngine.enabled = false;
+      this.videoTitle.textContent = 'No Video Loaded';
+      this.subIcon.textContent = 'subtitles_off';
+      this.btnSubtitle.classList.remove('active');
+      
+      this.landingFileInput.value = '';
+      if (this.addSubInput) this.addSubInput.value = '';
+      const addAudioTrackInput = document.getElementById('add-audio-track-input');
+      if (addAudioTrackInput) addAudioTrackInput.value = '';
+
       this.landing.classList.add('active');
       this.settingsModal.classList.add('hidden');
       this.dropZone.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
       this.pe.start();
     });
 
+    this.landingFileInput.addEventListener('click', () => { this.landingFileInput.value = ''; });
     this.landingFileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
     this.dropZone.addEventListener('dragover', (e) => { e.preventDefault(); this.dropZone.classList.add('dragover'); });
     this.dropZone.addEventListener('dragleave', () => this.dropZone.classList.remove('dragover'));
@@ -200,6 +217,7 @@ export class UIController {
     // Add external audio track
     const addAudioTrackInput = document.getElementById('add-audio-track-input');
     if (addAudioTrackInput) {
+      addAudioTrackInput.addEventListener('click', () => { addAudioTrackInput.value = ''; });
       addAudioTrackInput.addEventListener('change', (e) => {
         if (e.target.files.length) {
           Array.from(e.target.files).forEach(file => {
@@ -320,11 +338,16 @@ export class UIController {
     const subFile = Array.from(files).find(f => f.name.endsWith('.srt') || f.name.endsWith('.vtt'));
     
     if (videoFile) {
+      if (this.currentVideoUrl) {
+        URL.revokeObjectURL(this.currentVideoUrl);
+      }
       this.videoTitle.textContent = videoFile.name;
       const url = URL.createObjectURL(videoFile);
+      this.currentVideoUrl = url;
       this.vc.load(url);
       this.landing.classList.remove('active');
       this.pe.stop();
+      this.landingFileInput.value = '';
     }
     
     if (subFile) {
@@ -332,6 +355,7 @@ export class UIController {
       this.subIcon.textContent = 'subtitles';
       this.btnSubtitle.classList.add('active');
       this.subEngine.enabled = true;
+      if (this.addSubInput) this.addSubInput.value = '';
     }
   }
 

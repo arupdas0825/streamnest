@@ -17,6 +17,11 @@ export class SubtitleEngine {
     return this.enabled;
   }
 
+  clear() {
+    this.subtitles = [];
+    this.container.innerHTML = '';
+  }
+
   loadSubtitle(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
