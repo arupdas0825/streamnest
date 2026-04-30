@@ -9,7 +9,8 @@ export class VideoCore {
       duration: 0,
       volume: 1,
       isMuted: false,
-      playbackRate: 1
+      playbackRate: 1,
+      brightness: 1
     };
     this.listeners = {};
     
@@ -115,6 +116,11 @@ export class VideoCore {
     this.video.playbackRate = rate; 
     this.state.playbackRate = rate; 
     if(this.activeExternalAudio) this.activeExternalAudio.playbackRate = rate;
+  }
+  
+  setBrightness(val) {
+    this.state.brightness = val;
+    this.video.style.filter = `brightness(${val})`;
   }
   
   toggleFullscreen(container) {

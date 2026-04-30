@@ -57,6 +57,7 @@ export class UIController {
     this.subPos = document.getElementById('sub-pos');
     this.themeBtns = document.querySelectorAll('.theme-btn');
     this.audioTracksList = document.getElementById('audio-tracks-list');
+    this.gestureFeedback = document.getElementById('gesture-feedback');
   }
 
   bindVideoEvents() {
@@ -125,7 +126,24 @@ export class UIController {
 
     this.btnPlay.addEventListener('click', () => this.vc.togglePlay());
     this.btnCenterPlay.addEventListener('click', () => this.vc.togglePlay());
-    this.vc.video.addEventListener('click', () => this.vc.togglePlay());
+    
+    this.playerContainer.addEventListener('click', (e) => {
+      const isControl = e.target.closest('.controls-row') || 
+                        e.target.closest('.top-bar') || 
+                        e.target.closest('button') || 
+                        e.target.closest('input') || 
+                        e.target.closest('.progress-container') ||
+                        e.target.closest('.settings-modal');
+      if (!isControl) {
+        this.vc.togglePlay();
+      }
+    });
+
+    this.mouseXPercent = 0.5;
+    this.playerContainer.addEventListener('mousemove', (e) => {
+      const rect = this.playerContainer.getBoundingClientRect();
+      this.mouseXPercent = (e.clientX - rect.left) / rect.width;
+    });
     
     this.progressContainer.addEventListener('click', (e) => {
       const rect = this.progressContainer.getBoundingClientRect();
@@ -263,13 +281,35 @@ export class UIController {
         case 'ArrowLeft': this.vc.seek(this.vc.state.currentTime - 5); break;
         case 'ArrowUp': 
           e.preventDefault();
-          this.volumeSlider.value = Math.min(1, parseFloat(this.volumeSlider.value) + 0.1);
-          this.volumeSlider.dispatchEvent(new Event('input'));
+          if (this.mouseXPercent < 0.35) {
+            this.volumeSlider.value = Math.min(1, parseFloat(this.volumeSlider.value) + 0.05);
+            this.volumeSlider.dispatchEvent(new Event('input'));
+            this.showFeedback(`🔊 ${Math.round(this.volumeSlider.value * 100)}%`);
+          } else if (this.mouseXPercent > 0.65) {
+            this.vc.state.brightness = Math.min(2, (this.vc.state.brightness || 1) + 0.1);
+            this.vc.setBrightness(this.vc.state.brightness);
+            this.showFeedback(`☀️ ${Math.round(this.vc.state.brightness * 100)}%`);
+          } else {
+            this.volumeSlider.value = Math.min(1, parseFloat(this.volumeSlider.value) + 0.05);
+            this.volumeSlider.dispatchEvent(new Event('input'));
+            this.showFeedback(`🔊 ${Math.round(this.volumeSlider.value * 100)}%`);
+          }
           break;
         case 'ArrowDown':
           e.preventDefault();
-          this.volumeSlider.value = Math.max(0, parseFloat(this.volumeSlider.value) - 0.1);
-          this.volumeSlider.dispatchEvent(new Event('input'));
+          if (this.mouseXPercent < 0.35) {
+            this.volumeSlider.value = Math.max(0, parseFloat(this.volumeSlider.value) - 0.05);
+            this.volumeSlider.dispatchEvent(new Event('input'));
+            this.showFeedback(`🔊 ${Math.round(this.volumeSlider.value * 100)}%`);
+          } else if (this.mouseXPercent > 0.65) {
+            this.vc.state.brightness = Math.max(0.1, (this.vc.state.brightness || 1) - 0.1);
+            this.vc.setBrightness(this.vc.state.brightness);
+            this.showFeedback(`☀️ ${Math.round(this.vc.state.brightness * 100)}%`);
+          } else {
+            this.volumeSlider.value = Math.max(0, parseFloat(this.volumeSlider.value) - 0.05);
+            this.volumeSlider.dispatchEvent(new Event('input'));
+            this.showFeedback(`🔊 ${Math.round(this.volumeSlider.value * 100)}%`);
+          }
           break;
         case 'f': this.vc.toggleFullscreen(this.playerContainer); break;
         case 'm': this.btnMute.click(); break;
@@ -426,6 +466,16 @@ export class UIController {
     
     this.vc.on('play', resetIdle);
     this.vc.on('pause', () => { clearTimeout(idleTimer); this.showControls(); });
+  }
+
+  showFeedback(text) {
+    if (!this.gestureFeedback) return;
+    this.gestureFeedback.textContent = text;
+    this.gestureFeedback.classList.remove('hidden');
+    clearTimeout(this.feedbackTimer);
+    this.feedbackTimer = setTimeout(() => {
+      this.gestureFeedback.classList.add('hidden');
+    }, 1000);
   }
 
   showControls() {
