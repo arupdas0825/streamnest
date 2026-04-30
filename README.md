@@ -5,6 +5,8 @@
 **StreamNest Pro** is a premium, zero-backend, browser-native media player. Inspired by modern cinematic UX, it transforms your web browser into a professional-grade media application. Designed with a stunning glassmorphism interface, interactive ambient backgrounds, and deep OS-level media integration, StreamNest offers a truly immersive playback experience.
 
 ---
+<img width="1600" height="685" alt="streamnest" src="https://github.com/user-attachments/assets/352df6d7-61f5-487c-9467-bcabbc23fafe" />
+
 
 ## ✨ Full Feature List
 
