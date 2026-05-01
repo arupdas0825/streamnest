@@ -5,7 +5,6 @@
 **StreamNest Pro** is a premium, zero-backend, browser-native media player. Inspired by modern cinematic UX, it transforms your web browser into a professional-grade media application. Designed with a stunning glassmorphism interface, interactive ambient backgrounds, and deep OS-level media integration, StreamNest offers a truly immersive playback experience.
 
 ---
-<img width="1600" height="685" alt="streamnest" src="https://github.com/user-attachments/assets/352df6d7-61f5-487c-9467-bcabbc23fafe" />
 
 
 ## ✨ Full Feature List
@@ -82,15 +81,18 @@ StreamNest includes an intuitive, full-screen keyboard and gesture control syste
 *(Placeholders - Add actual images to the `public/screenshots` folder)*
 
 ### Landing Page
-![Landing Page](./public/screenshots/landing.png)
+![Landing Page](<img width="1600" height="685" alt="streamnest" src="https://github.com/user-attachments/assets/352df6d7-61f5-487c-9467-bcabbc23fafe" />
+)
 *Cinematic drop zone with interactive particles and animated branding.*
 
 ### Player UI
-![Player UI](./public/screenshots/player.png)
+![Player UI](<img width="1919" height="1077" alt="image" src="https://github.com/user-attachments/assets/43f20d30-e689-486d-be17-bf1e54242568" />
+)
 *Glassmorphism controls overlay with smart gesture feedback.*
 
 ### Settings Panel
-![Settings Panel](./public/screenshots/settings.png)
+![Settings Panel](<img width="1881" height="868" alt="image" src="https://github.com/user-attachments/assets/19d74449-09ee-4f2d-8a6e-96ac2df21bbf" />
+)
 *Pro Settings modal featuring the 10-band EQ and Theme customization.*
 
 ---
