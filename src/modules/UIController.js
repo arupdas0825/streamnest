@@ -1,10 +1,15 @@
+import { PlaybackTracker } from './PlaybackTracker.js';
+
 export class UIController {
+
   constructor(videoCore, subtitleEngine, audioCore, themeManager, particleEngine) {
     this.vc = videoCore;
     this.subEngine = subtitleEngine;
     this.audioCore = audioCore;
     this.themeManager = themeManager;
     this.pe = particleEngine;
+    this.playbackTracker = new PlaybackTracker(this.vc);
+    this.resumePosition = 0;
     this.bindElements();
     this.bindVideoEvents();
     this.bindUIEvents();
@@ -98,6 +103,14 @@ export class UIController {
     });
     this.vc.on('loadedmetadata', () => {
       this.populateAudioTracks();
+      
+      // Handle Playback Resume
+      if (this.resumePosition > 0) {
+        console.log(`UI: Resuming at ${this.resumePosition}`);
+        this.vc.seek(this.resumePosition);
+        this.resumePosition = 0; // Reset after use
+      }
+
       // Restore volume
       const savedVol = localStorage.getItem('sn-volume');
       if (savedVol !== null) {
@@ -215,6 +228,7 @@ export class UIController {
     this.btnCloseSettings.addEventListener('click', () => this.settingsModal.classList.add('hidden'));
 
     this.btnBack.addEventListener('click', () => {
+      this.playbackTracker.stop();
       this.vc.unload();
       if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = 'none';
@@ -407,6 +421,12 @@ export class UIController {
         URL.revokeObjectURL(this.currentVideoUrl);
       }
       this.videoTitle.textContent = videoFile.name;
+      
+      // Initialize Playback Tracking
+      // mediaId is currently just filename. In a production app, we'd use file size + name or hash.
+      const mediaId = `sn-${videoFile.name}-${videoFile.size}`;
+      this.resumePosition = this.playbackTracker.init(mediaId, { title: videoFile.name });
+
       const url = URL.createObjectURL(videoFile);
       this.currentVideoUrl = url;
       this.vc.load(url);
