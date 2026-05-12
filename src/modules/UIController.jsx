@@ -1,7 +1,5 @@
-import { PlaybackTracker } from './PlaybackTracker.js';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import ContinueWatching from '../ui/ContinueWatching.jsx';
 import AdvancedControls from '../ui/AdvancedControls.jsx';
 import GlobalPlayer from '../ui/GlobalPlayer.jsx';
 
@@ -17,18 +15,10 @@ export class UIController {
     
     // Mount Global Player System
     this.renderGlobalPlayer();
-    // Mount React Continue Watching Row
-    this.renderContinueWatching();
-    
-    this.playbackTracker = new PlaybackTracker(this.vc);
-    this.resumePosition = 0;
     
     this.bindElements();
     this.bindVideoEvents();
     this.bindUIEvents();
-    
-    // Initial render
-    this.renderContinueWatching();
   }
 
   renderGlobalPlayer() {
@@ -42,21 +32,7 @@ export class UIController {
     );
   }
 
-  renderContinueWatching() {
-    const container = document.getElementById('continue-watching-section');
-    if (!container) return;
-    if (!this.reactRoot) {
-      this.reactRoot = ReactDOM.createRoot(container);
-    }
-    this.reactRoot.render(
-      <ContinueWatching 
-        onResume={() => {
-          this.showFeedback("Select file to resume");
-          this.landingFileInput.click();
-        }} 
-      />
-    );
-  }
+
 
   renderAdvancedControls() {
     const container = document.getElementById('advanced-controls-root');
@@ -94,12 +70,6 @@ export class UIController {
     this.vc.on('pause', () => {
       if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
     });
-    this.vc.on('loadedmetadata', () => {
-      if (this.resumePosition > 0) {
-        this.vc.seek(this.resumePosition);
-        this.resumePosition = 0;
-      }
-    });
   }
 
   bindUIEvents() {
@@ -131,9 +101,6 @@ export class UIController {
     if (videoFile) {
       if (this.currentVideoUrl) URL.revokeObjectURL(this.currentVideoUrl);
       this.videoTitleText = videoFile.name;
-      
-      const mediaId = `sn-${videoFile.name}-${videoFile.size}`;
-      this.resumePosition = this.playbackTracker.init(mediaId, { title: videoFile.name });
 
       const url = URL.createObjectURL(videoFile);
       this.currentVideoUrl = url;

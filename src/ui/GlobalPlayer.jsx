@@ -54,14 +54,12 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
       playerScreen.classList.remove('active');
       landingScreen.classList.add('active');
       videoContainer.classList.add('is-mini');
-      uiController.renderContinueWatching();
     } else if (viewMode === 'none') {
       // Close player
       playerScreen.classList.remove('active');
       landingScreen.classList.add('active');
       videoContainer.classList.remove('is-mini');
       playerScreen.appendChild(videoContainer);
-      uiController.renderContinueWatching();
     }
   }, [viewMode, uiController]);
 
