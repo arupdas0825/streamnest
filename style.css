@@ -1,3 +1,7 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
 :root {
   --bg-color: #050507;
   --primary: #00f0ff;
@@ -25,7 +29,7 @@ body {
   font-family: var(--font-main);
   height: 100vh;
   width: 100vw;
-  overflow: hidden;
+  overflow: auto; /* Changed from hidden to allow landing page scrolling */
   user-select: none;
   transition: background-color 0.5s ease;
 }
@@ -36,13 +40,16 @@ body {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column; /* Added for vertical layout */
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* Start from top to allow scrolling */
+  padding: 40px 20px;
   background: radial-gradient(circle at 50% 30%, #1a1a24 0%, var(--bg-color) 100%);
   z-index: 100;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.5s ease;
+  overflow-y: auto; /* Enable scrolling for history list */
 }
 #landing-screen.active { opacity: 1; pointer-events: all; }
 #ambient-canvas {
@@ -106,7 +113,14 @@ body {
   object-fit: cover;
 }
 
-.tagline { font-size: 1.2rem; color: var(--text-dim); margin-bottom: 3rem; font-weight: 300; }
+.tagline { font-size: 1.2rem; color: var(--text-dim); margin-bottom: 2rem; font-weight: 300; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Redundant Continue Watching styles removed as they are now handled by Tailwind in React components */
 
 #drop-zone {
   width: 500px;

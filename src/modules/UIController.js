@@ -1,4 +1,7 @@
 import { PlaybackTracker } from './PlaybackTracker.js';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import ContinueWatching from '../ui/ContinueWatching.jsx';
 
 export class UIController {
 
@@ -16,6 +19,25 @@ export class UIController {
     this.setupIdleTimer();
     this.speeds = [1, 1.25, 1.5, 2, 0.5];
     this.speedIndex = 0;
+    
+    // Mount React Continue Watching Row
+    this.renderContinueWatching();
+  }
+
+  renderContinueWatching() {
+    const container = document.getElementById('continue-watching-section');
+    if (!this.reactRoot) {
+      this.reactRoot = ReactDOM.createRoot(container);
+    }
+    
+    this.reactRoot.render(
+      <ContinueWatching 
+        onResume={() => {
+          this.showFeedback("Select file to resume");
+          this.landingFileInput.click();
+        }} 
+      />
+    );
   }
 
   bindElements() {
@@ -253,6 +275,9 @@ export class UIController {
       this.settingsModal.classList.add('hidden');
       this.dropZone.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
       this.pe.start();
+      
+      // Refresh continue watching list
+      this.renderContinueWatching();
     });
 
     this.landingFileInput.addEventListener('click', () => { this.landingFileInput.value = ''; });
