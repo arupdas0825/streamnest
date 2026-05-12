@@ -31,17 +31,17 @@ const AmbientTheater = ({ videoElement, isActive }) => {
 
   return (
     <div 
-      className={`absolute inset-0 z-0 transition-opacity duration-1000 overflow-hidden pointer-events-none ${isActive ? 'opacity-100' : 'opacity-0'}`}
+      className={`absolute inset-0 z-0 transition-opacity duration-[1500ms] overflow-hidden pointer-events-none ${isActive ? 'opacity-100' : 'opacity-0'}`}
     >
       <canvas
         ref={canvasRef}
         width="32"
         height="18"
-        className="w-full h-full scale-150 blur-[100px] opacity-60 saturate-150"
+        className="w-full h-full scale-110 blur-[80px] opacity-30 saturate-[1.2]"
       />
       {/* Vignette/Dark overlay to keep focus on player */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-40" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-40" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-60" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-60" />
     </div>
   );
 };

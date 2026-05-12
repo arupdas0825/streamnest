@@ -182,7 +182,7 @@ body {
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--primary-glow); }
 .btn-primary input { display: none; }
 
-#player-screen { position: absolute; inset: 0; background: #000; opacity: 1; pointer-events: all; }
+#player-screen { position: absolute; inset: 0; background: transparent; opacity: 1; pointer-events: all; display: flex; align-items: center; justify-content: center; }
 .video-container { width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
 #main-video { width: 100%; height: 100%; object-fit: contain; }
 
