@@ -1,9 +1,10 @@
-import { PlaybackTracker } from './PlaybackTracker.js';
+﻿import { PlaybackTracker } from './PlaybackTracker.js';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import GlobalPlayer from '../ui/GlobalPlayer.jsx';
+import ContinueWatching from '../ui/ContinueWatching.jsx';
 
 export class UIController {
+
   constructor(videoCore, subtitleEngine, audioCore, themeManager, particleEngine) {
     this.vc = videoCore;
     this.subEngine = subtitleEngine;
@@ -12,26 +13,30 @@ export class UIController {
     this.pe = particleEngine;
     this.playbackTracker = new PlaybackTracker(this.vc);
     this.resumePosition = 0;
-    
-    // Mount Global Player System
-    this.renderGlobalPlayer();
-    
     this.bindElements();
     this.bindVideoEvents();
     this.bindUIEvents();
     this.setupIdleTimer();
     this.speeds = [1, 1.25, 1.5, 2, 0.5];
     this.speedIndex = 0;
+    
+    // Mount React Continue Watching Row
+    this.renderContinueWatching();
   }
 
-  renderGlobalPlayer() {
-    const container = document.getElementById('global-ui-root');
-    if (!container) return;
-    if (!this.globalRoot) {
-      this.globalRoot = ReactDOM.createRoot(container);
+  renderContinueWatching() {
+    const container = document.getElementById('continue-watching-section');
+    if (!this.reactRoot) {
+      this.reactRoot = ReactDOM.createRoot(container);
     }
-    this.globalRoot.render(
-      <GlobalPlayer videoCore={this.vc} uiController={this} />
+    
+    this.reactRoot.render(
+      <ContinueWatching 
+        onResume={() => {
+          this.showFeedback("Select file to resume");
+          this.landingFileInput.click();
+        }} 
+      />
     );
   }
 
@@ -245,9 +250,34 @@ export class UIController {
     this.btnCloseSettings.addEventListener('click', () => this.settingsModal.classList.add('hidden'));
 
     this.btnBack.addEventListener('click', () => {
-      // INSTEAD of manually resetting EVERYTHING and hiding the player,
-      // dispatch the minimize event so GlobalPlayer can handle mini mode.
-      window.dispatchEvent(new CustomEvent('sn-minimize-player'));
+      this.playbackTracker.stop();
+      this.vc.unload();
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'none';
+        navigator.mediaSession.metadata = null;
+      }
+      if (this.currentVideoUrl) {
+        URL.revokeObjectURL(this.currentVideoUrl);
+        this.currentVideoUrl = null;
+      }
+      this.subEngine.clear();
+      this.subEngine.enabled = false;
+      this.videoTitle.textContent = 'No Video Loaded';
+      this.subIcon.textContent = 'subtitles_off';
+      this.btnSubtitle.classList.remove('active');
+      
+      this.landingFileInput.value = '';
+      if (this.addSubInput) this.addSubInput.value = '';
+      const addAudioTrackInput = document.getElementById('add-audio-track-input');
+      if (addAudioTrackInput) addAudioTrackInput.value = '';
+
+      this.landing.classList.add('active');
+      this.settingsModal.classList.add('hidden');
+      this.dropZone.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
+      this.pe.start();
+      
+      // Refresh continue watching list
+      this.renderContinueWatching();
     });
 
     this.landingFileInput.addEventListener('click', () => { this.landingFileInput.value = ''; });
@@ -283,12 +313,12 @@ export class UIController {
     document.addEventListener('keydown', (e) => {
       if (this.landing.classList.contains('active')) return;
       if (e.target.tagName === 'INPUT') return; // Don't trigger if typing in settings
-      switch(e.key.toLowerCase()) {
+      switch(e.key) {
         case ' ':
         case 'k': e.preventDefault(); this.vc.togglePlay(); break;
-        case 'arrowright': this.vc.seek(this.vc.state.currentTime + 5); break;
-        case 'arrowleft': this.vc.seek(this.vc.state.currentTime - 5); break;
-        case 'arrowup': 
+        case 'ArrowRight': this.vc.seek(this.vc.state.currentTime + 5); break;
+        case 'ArrowLeft': this.vc.seek(this.vc.state.currentTime - 5); break;
+        case 'ArrowUp': 
           e.preventDefault();
           if (this.mouseXPercent < 0.35) {
             this.volumeSlider.value = Math.min(1, parseFloat(this.volumeSlider.value) + 0.05);
@@ -304,7 +334,7 @@ export class UIController {
             this.showFeedback(`≡ƒöè ${Math.round(this.volumeSlider.value * 100)}%`);
           }
           break;
-        case 'arrowdown':
+        case 'ArrowDown':
           e.preventDefault();
           if (this.mouseXPercent < 0.35) {
             this.volumeSlider.value = Math.max(0, parseFloat(this.volumeSlider.value) - 0.05);
@@ -322,7 +352,6 @@ export class UIController {
           break;
         case 'f': this.vc.toggleFullscreen(this.playerContainer); break;
         case 'm': this.btnMute.click(); break;
-        case 't': window.dispatchEvent(new CustomEvent('sn-toggle-theater')); break;
       }
       this.showControls();
     });
@@ -374,7 +403,7 @@ export class UIController {
     
     if(tracks.length > 0) {
       for(let i = 0; i < tracks.length; i++) {
-        nativeHtml += `<div class="track-item ${tracks[i].enabled && !this.vc.activeExternalAudio ? 'active' : ''}" data-type="native" data-index="${i}">Native: ${tracks[i].label || ('Track ' + (i+1))}</div>`;
+        nativeHtml += `<div class="track-item ${tracks[i].enabled && !this.vc.activeExternalAudio ? 'active' : ''}" data-type="native" data-index="${i}">Native: ${tracks[i].label || `Track ${i+1}`}</div>`;
       }
     } else {
       nativeHtml += `<div class="track-item ${!this.vc.activeExternalAudio ? 'active' : ''}" data-type="native" data-index="0">Default Video Audio</div>`;
@@ -419,16 +448,13 @@ export class UIController {
       this.videoTitle.textContent = videoFile.name;
       
       // Initialize Playback Tracking
+      // mediaId is currently just filename. In a production app, we'd use file size + name or hash.
       const mediaId = `sn-${videoFile.name}-${videoFile.size}`;
       this.resumePosition = this.playbackTracker.init(mediaId, { title: videoFile.name });
 
       const url = URL.createObjectURL(videoFile);
       this.currentVideoUrl = url;
       this.vc.load(url);
-      
-      // Notify GlobalPlayer React wrapper
-      window.dispatchEvent(new CustomEvent('sn-open-player', { detail: { title: videoFile.name } }));
-      
       this.landing.classList.remove('active');
       this.pe.stop();
       this.landingFileInput.value = '';

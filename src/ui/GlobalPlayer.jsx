@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { PlayerProvider, usePlayerContext } from '../context/PlayerContext.jsx';
 import MiniPlayer from './MiniPlayer.jsx';
 import AmbientTheater from './AmbientTheater.jsx';
@@ -44,8 +45,6 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
       } else {
         videoContainer.classList.remove('is-theater');
       }
-      
-      uiController.renderAdvancedControls();
     } else if (viewMode === 'mini') {
       // Switch to mini mode
       if (miniTarget) {
