@@ -3,7 +3,7 @@ import { SubtitleEngine } from './modules/SubtitleEngine.js';
 import { AudioCore } from './modules/AudioCore.js';
 import { ThemeManager } from './modules/ThemeManager.js';
 import { ParticleEngine } from './modules/ParticleEngine.js';
-import { UIController } from './modules/UIController.js';
+import { UIController } from './modules/UIController.jsx';
 
 document.addEventListener('DOMContentLoaded', () => {
   const videoElement = document.getElementById('main-video');

@@ -1,6 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #00f0ff;
+  --color-secondary: #ff0055;
+  --color-glass: rgba(20, 20, 25, 0.6);
+}
 
 :root {
   --bg-color: #050507;
