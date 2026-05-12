@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
 import { PlayerProvider, usePlayerContext } from '../context/PlayerContext.jsx';
 import MiniPlayer from './MiniPlayer.jsx';
+import AmbientTheater from './AmbientTheater.jsx';
 
 const GlobalPlayerContent = ({ videoCore, uiController }) => {
-  const { viewMode, videoTitle, expand, close, setViewMode } = usePlayerContext();
+  const { viewMode, videoTitle, isTheaterMode, expand, close, setViewMode, toggleTheater, openFull, minimize } = usePlayerContext();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -11,15 +11,18 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
     
     const handleMinimize = () => minimize();
     const handleOpen = (e) => openFull(e.detail.title);
+    const handleTheater = () => toggleTheater();
 
     window.addEventListener('sn-minimize-player', handleMinimize);
     window.addEventListener('sn-open-player', handleOpen);
+    window.addEventListener('sn-toggle-theater', handleTheater);
 
     return () => {
       window.removeEventListener('sn-minimize-player', handleMinimize);
       window.removeEventListener('sn-open-player', handleOpen);
+      window.removeEventListener('sn-toggle-theater', handleTheater);
     };
-  }, [minimize, openFull]);
+  }, [minimize, openFull, toggleTheater]);
 
   useEffect(() => {
     const videoContainer = document.getElementById('video-container');
@@ -35,6 +38,13 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
       playerScreen.classList.add('active');
       landingScreen.classList.remove('active');
       videoContainer.classList.remove('is-mini');
+      
+      if (isTheaterMode) {
+        videoContainer.classList.add('is-theater');
+      } else {
+        videoContainer.classList.remove('is-theater');
+      }
+      
       uiController.renderAdvancedControls();
     } else if (viewMode === 'mini') {
       // Switch to mini mode
@@ -59,6 +69,9 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
 
   return (
     <>
+      {viewMode === 'full' && (
+        <AmbientTheater videoElement={videoCore.video} isActive={true} />
+      )}
       {viewMode === 'mini' && (
         <MiniPlayer 
           videoCore={videoCore} 

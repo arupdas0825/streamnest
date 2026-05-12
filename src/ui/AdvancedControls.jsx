@@ -71,7 +71,7 @@ const AdvancedControls = ({ videoCore, videoTitle, onBack }) => {
           player.setPlaybackRate(Math.max(0.25, player.playbackRate - 0.25));
           break;
         case 't':
-          player.setTheaterMode(!player.isTheaterMode);
+          window.dispatchEvent(new CustomEvent('sn-toggle-theater'));
           break;
         case 'p':
           videoCore.togglePiP();

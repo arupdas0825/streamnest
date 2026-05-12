@@ -5,6 +5,7 @@ const PlayerContext = createContext();
 export const PlayerProvider = ({ children }) => {
   const [viewMode, setViewMode] = useState('none'); // 'full', 'mini', 'none'
   const [videoTitle, setVideoTitle] = useState('');
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
   
   const minimize = useCallback(() => {
     if (viewMode === 'full') {
@@ -29,8 +30,16 @@ export const PlayerProvider = ({ children }) => {
     setViewMode('full');
   }, []);
 
+  const toggleTheater = useCallback(() => {
+    setIsTheaterMode(prev => !prev);
+  }, []);
+
   return (
-    <PlayerContext.Provider value={{ viewMode, videoTitle, minimize, expand, close, openFull, setViewMode }}>
+    <PlayerContext.Provider value={{ 
+      viewMode, videoTitle, isTheaterMode,
+      minimize, expand, close, openFull, toggleTheater,
+      setViewMode 
+    }}>
       {children}
     </PlayerContext.Provider>
   );
