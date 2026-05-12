@@ -52,6 +52,18 @@ body {
   overflow-y: auto; /* Enable scrolling for history list */
 }
 #landing-screen.active { opacity: 1; pointer-events: all; }
+
+.video-container.is-mini {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.video-container.is-mini video {
+  object-fit: cover;
+}
+
 #ambient-canvas {
   position: absolute;
   inset: 0;

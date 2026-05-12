@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import ContinueWatching from '../ui/ContinueWatching.jsx';
 import AdvancedControls from '../ui/AdvancedControls.jsx';
+import GlobalPlayer from '../ui/GlobalPlayer.jsx';
 
 export class UIController {
   constructor(videoCore, subtitleEngine, audioCore, themeManager, particleEngine) {
@@ -11,6 +12,14 @@ export class UIController {
     this.audioCore = audioCore;
     this.themeManager = themeManager;
     this.pe = particleEngine;
+    this.speeds = [1, 1.25, 1.5, 2, 0.5];
+    this.speedIndex = 0;
+    
+    // Mount Global Player System
+    this.renderGlobalPlayer();
+    // Mount React Continue Watching Row
+    this.renderContinueWatching();
+    
     this.playbackTracker = new PlaybackTracker(this.vc);
     this.resumePosition = 0;
     
@@ -20,6 +29,17 @@ export class UIController {
     
     // Initial render
     this.renderContinueWatching();
+  }
+
+  renderGlobalPlayer() {
+    const container = document.getElementById('global-ui-root');
+    if (!container) return;
+    if (!this.globalRoot) {
+      this.globalRoot = ReactDOM.createRoot(container);
+    }
+    this.globalRoot.render(
+      <GlobalPlayer videoCore={this.vc} uiController={this} />
+    );
   }
 
   renderContinueWatching() {
@@ -48,7 +68,11 @@ export class UIController {
       <AdvancedControls 
         videoCore={this.vc} 
         videoTitle={this.videoTitleText}
-        onBack={() => this.btnBack.click()}
+        onBack={() => {
+          // Instead of clicking this.btnBack, we just trigger minimize via a custom event or shared state
+          // For now, we'll use a custom event that the GlobalPlayer will listen to
+          window.dispatchEvent(new CustomEvent('sn-minimize-player'));
+        }}
       />
     );
   }
@@ -79,21 +103,9 @@ export class UIController {
   }
 
   bindUIEvents() {
-    // Back to Landing
+    // Back to Landing (Mini-player logic)
     this.btnBack.addEventListener('click', () => {
-      this.playbackTracker.stop();
-      this.vc.unload();
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'none';
-        navigator.mediaSession.metadata = null;
-      }
-      if (this.currentVideoUrl) {
-        URL.revokeObjectURL(this.currentVideoUrl);
-        this.currentVideoUrl = null;
-      }
-      this.landing.classList.add('active');
-      this.pe.start();
-      this.renderContinueWatching();
+      window.dispatchEvent(new CustomEvent('sn-minimize-player'));
     });
 
     // File Selection
@@ -130,7 +142,8 @@ export class UIController {
       this.landing.classList.remove('active');
       this.pe.stop();
       
-      this.renderAdvancedControls();
+      // Open Global Player in Full Mode
+      window.dispatchEvent(new CustomEvent('sn-open-player', { detail: { title: videoFile.name } }));
 
       if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
