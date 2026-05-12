@@ -350,5 +350,71 @@ body {
 /* Tracks */
 .tracks-list { display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; color: var(--text-dim); }
 .track-item { padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
-.track-item:hover { background: rgba(255,255,255,0.1); }
 .track-item.active { border-color: var(--primary); color: var(--primary); }
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .controls-overlay {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .controls-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  .controls-left, .controls-right {
+    justify-content: space-around;
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  .volume-group {
+    display: none; /* Rely on device volume or swipe on mobile */
+  }
+  .time-display {
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    margin-left: 0;
+  }
+  .icon-btn span {
+    font-size: 32px;
+  }
+  .huge-icon-btn {
+    width: 100px;
+    height: 100px;
+  }
+  .huge-icon-btn span {
+    font-size: 60px;
+  }
+  .progress-container {
+    height: 36px;
+    margin-bottom: 5px;
+  }
+  .progress-bg, .progress-buffer, .progress-fill {
+    height: 8px;
+  }
+  .progress-container:hover .progress-bg, .progress-container:hover .progress-buffer, .progress-container:hover .progress-fill {
+    height: 10px;
+  }
+  .progress-thumb {
+    width: 20px;
+    height: 20px;
+  }
+  .progress-container:hover .progress-thumb { 
+    transform: translate(-50%, -50%) scale(1.2); 
+  }
+  .gesture-feedback {
+    font-size: 2rem;
+    padding: 20px 40px;
+    border-radius: 16px;
+  }
+  #settings-modal {
+    width: 95%;
+    right: 2.5%;
+    bottom: 90px;
+    border-radius: 20px;
+  }
+  .video-container.is-theater {
+    height: 40vh !important;
+  }
+}

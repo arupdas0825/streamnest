@@ -125,9 +125,17 @@ export class VideoCore {
   
   toggleFullscreen(container) {
     if (!document.fullscreenElement) {
-      container.requestFullscreen().catch(err => console.log(err));
+      container.requestFullscreen().then(() => {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(err => console.log('Orientation lock failed', err));
+        }
+      }).catch(err => console.log(err));
     } else {
-      document.exitFullscreen();
+      document.exitFullscreen().then(() => {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      }).catch(err => console.log(err));
     }
   }
 

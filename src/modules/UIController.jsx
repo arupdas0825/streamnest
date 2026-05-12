@@ -157,7 +157,10 @@ export class UIController {
     this.btnPlay.addEventListener('click', () => this.vc.togglePlay());
     this.btnCenterPlay.addEventListener('click', () => this.vc.togglePlay());
     
+    // Desktop Click -> Play/Pause
     this.playerContainer.addEventListener('click', (e) => {
+      // Ignore if touch device
+      if (('ontouchstart' in window) || navigator.maxTouchPoints > 0) return;
       const isControl = e.target.closest('.controls-row') || 
                         e.target.closest('.top-bar') || 
                         e.target.closest('button') || 
@@ -167,6 +170,93 @@ export class UIController {
       if (!isControl) {
         this.vc.togglePlay();
       }
+    });
+
+    // Mobile Touch Gestures
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let lastTapTime = 0;
+    let isSwipe = false;
+    let initialVolume = 0;
+    let initialBrightness = 0;
+    let activeSwipe = null;
+
+    this.playerContainer.addEventListener('touchstart', (e) => {
+      if (e.target.closest('.controls-row') || e.target.closest('.top-bar') || e.target.closest('.settings-modal') || e.target.closest('.progress-container')) return;
+      
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      initialVolume = parseFloat(this.volumeSlider.value) || 1;
+      initialBrightness = this.vc.state.brightness || 1;
+      isSwipe = false;
+      activeSwipe = null;
+    }, {passive: true});
+
+    this.playerContainer.addEventListener('touchmove', (e) => {
+      if (e.target.closest('.controls-row') || e.target.closest('.top-bar') || e.target.closest('.settings-modal') || e.target.closest('.progress-container')) return;
+      
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+      const diffX = touchX - touchStartX;
+      const diffY = touchY - touchStartY;
+
+      if (!isSwipe && (Math.abs(diffX) > 20 || Math.abs(diffY) > 20)) {
+        isSwipe = true;
+        if (Math.abs(diffY) > Math.abs(diffX)) {
+          const rect = this.playerContainer.getBoundingClientRect();
+          if (touchStartX > rect.width / 2) {
+            activeSwipe = 'volume';
+          } else {
+            activeSwipe = 'brightness';
+          }
+        }
+      }
+
+      if (isSwipe && activeSwipe) {
+        if (e.cancelable) e.preventDefault();
+        if (activeSwipe === 'volume') {
+          const change = -diffY / 200;
+          const newVol = Math.max(0, Math.min(1, initialVolume + change));
+          this.vc.setVolume(newVol);
+          this.volumeSlider.value = newVol;
+          this.updateVolumeUI();
+          this.showFeedback(`🔊 ${Math.round(newVol * 100)}%`);
+        } else if (activeSwipe === 'brightness') {
+          const change = -diffY / 200;
+          const newBright = Math.max(0.1, Math.min(2, initialBrightness + change));
+          this.vc.setBrightness(newBright);
+          this.showFeedback(`☀️ ${Math.round(newBright * 100)}%`);
+        }
+      }
+    }, {passive: false});
+
+    this.playerContainer.addEventListener('touchend', (e) => {
+      if (e.target.closest('.controls-row') || e.target.closest('.top-bar') || e.target.closest('.settings-modal') || e.target.closest('.progress-container')) return;
+      
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTapTime;
+
+      if (!isSwipe) {
+        if (tapLength < 300 && tapLength > 0) {
+          const rect = this.playerContainer.getBoundingClientRect();
+          if (touchStartX > rect.width / 2) {
+            this.vc.seek(this.vc.state.currentTime + 10);
+            this.showFeedback('⏩ +10s');
+          } else {
+            this.vc.seek(this.vc.state.currentTime - 10);
+            this.showFeedback('⏪ -10s');
+          }
+          if (e.cancelable) e.preventDefault();
+          lastTapTime = 0;
+        } else {
+          if (this.controlsOverlay.classList.contains('idle')) {
+            this.showControls();
+          } else {
+            this.hideControls();
+          }
+        }
+      }
+      lastTapTime = currentTime;
     });
 
     this.mouseXPercent = 0.5;
