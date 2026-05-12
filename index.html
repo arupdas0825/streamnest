@@ -39,63 +39,12 @@
 
   <div id="player-screen">
     <div class="video-container" id="video-container">
-      <video id="main-video" crossorigin="anonymous"></video>
-      
+      <video id="main-video" crossorigin="anonymous" class="w-full h-full object-contain"></video>
       <div id="subtitle-container"></div>
-      
       <div id="gesture-feedback" class="gesture-feedback hidden"></div>
       
-      <div class="controls-overlay idle" id="controls-overlay">
-        
-        <div class="top-bar">
-          <button class="icon-btn" id="btn-back" title="Back to Home"><span class="material-symbols-rounded">arrow_back</span></button>
-          <h2 id="video-title">No Video Loaded</h2>
-        </div>
-
-        <div class="center-controls" id="center-play-overlay">
-          <button class="huge-icon-btn" id="btn-center-play"><span class="material-symbols-rounded">play_arrow</span></button>
-        </div>
-
-        <div class="bottom-bar">
-          <div class="progress-container" id="progress-container">
-            <div class="progress-bg"></div>
-            <div class="progress-buffer" id="progress-buffer"></div>
-            <div class="progress-fill" id="progress-fill"></div>
-            <div class="progress-thumb" id="progress-thumb"></div>
-            <div class="progress-tooltip" id="progress-tooltip">00:00</div>
-          </div>
-          
-          <div class="controls-row">
-            <div class="controls-left">
-              <button class="icon-btn" id="btn-play"><span class="material-symbols-rounded">play_arrow</span></button>
-              
-              <div class="volume-group">
-                <button class="icon-btn" id="btn-mute"><span class="material-symbols-rounded">volume_up</span></button>
-                <div class="volume-slider-container">
-                  <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1" />
-                </div>
-              </div>
-              
-              <div class="time-display">
-                <span id="time-current">00:00</span> / <span id="time-duration">00:00</span>
-              </div>
-            </div>
-            
-            <div class="controls-right">
-              <button class="icon-btn text-btn" id="btn-speed">1x</button>
-              <button class="icon-btn" id="btn-screenshot" title="Screenshot"><span class="material-symbols-rounded">photo_camera</span></button>
-              <button class="icon-btn" id="btn-subtitle" title="Toggle Subtitles"><span class="material-symbols-rounded" id="sub-icon">subtitles_off</span></button>
-              <label class="icon-btn" title="Add Subtitle">
-                <span class="material-symbols-rounded">note_add</span>
-                <input type="file" id="add-sub-input" accept=".srt,.vtt" style="display:none;" />
-              </label>
-              <button class="icon-btn" id="btn-pip" title="Picture in Picture"><span class="material-symbols-rounded">picture_in_picture_alt</span></button>
-              <button class="icon-btn" id="btn-fullscreen" title="Fullscreen"><span class="material-symbols-rounded">fullscreen</span></button>
-              <button class="icon-btn" id="btn-settings" title="Settings"><span class="material-symbols-rounded">settings</span></button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- React Advanced Controls Mount Point -->
+      <div id="advanced-controls-root"></div>
     </div>
   </div>
 
