@@ -2,6 +2,7 @@ import { PlaybackTracker } from './PlaybackTracker.js';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import GlobalPlayer from '../ui/GlobalPlayer.jsx';
+import { formatTime } from '../utils/timeFormatter.js';
 
 export class UIController {
   constructor(videoCore, subtitleEngine, audioCore, themeManager, particleEngine) {
@@ -553,10 +554,7 @@ export class UIController {
   }
 
   formatTime(seconds) {
-    if (isNaN(seconds)) return "00:00";
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return formatTime(seconds, this.vc.state.duration);
   }
 
   setupIdleTimer() {

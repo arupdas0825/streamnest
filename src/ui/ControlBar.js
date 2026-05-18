@@ -1,5 +1,6 @@
 import { controlBus, Events } from '../modules/ControlBus.js';
 import { MediaState } from '../main.js';
+import { formatTime } from '../utils/timeFormatter.js';
 
 export class ControlBar {
   constructor(container, fileEngine) {
@@ -150,9 +151,6 @@ export class ControlBar {
   }
 
   formatTime(seconds) {
-    if(isNaN(seconds)) return "00:00";
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return formatTime(seconds, MediaState.duration);
   }
 }
