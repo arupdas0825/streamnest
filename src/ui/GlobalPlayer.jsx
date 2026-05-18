@@ -13,17 +13,23 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
     const handleMinimize = () => minimize();
     const handleOpen = (e) => openFull(e.detail.title);
     const handleTheater = () => toggleTheater();
+    const handleClose = () => {
+      videoCore.unload();
+      close();
+    };
 
     window.addEventListener('sn-minimize-player', handleMinimize);
     window.addEventListener('sn-open-player', handleOpen);
     window.addEventListener('sn-toggle-theater', handleTheater);
+    window.addEventListener('sn-close-player', handleClose);
 
     return () => {
       window.removeEventListener('sn-minimize-player', handleMinimize);
       window.removeEventListener('sn-open-player', handleOpen);
       window.removeEventListener('sn-toggle-theater', handleTheater);
+      window.removeEventListener('sn-close-player', handleClose);
     };
-  }, [minimize, openFull, toggleTheater]);
+  }, [minimize, openFull, toggleTheater, close, videoCore]);
 
   useEffect(() => {
     const videoContainer = document.getElementById('video-container');
@@ -75,8 +81,7 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
           title={videoTitle} 
           onExpand={expand} 
           onClose={() => {
-            videoCore.unload();
-            close();
+            window.dispatchEvent(new CustomEvent('sn-close-player'));
           }} 
         />
       )}

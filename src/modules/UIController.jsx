@@ -45,6 +45,7 @@ export class UIController {
     this.controlsOverlay = document.getElementById('controls-overlay');
     this.videoTitle = document.getElementById('video-title');
     this.btnBack = document.getElementById('btn-back');
+    this.btnMinimize = document.getElementById('btn-minimize');
     this.btnCenterPlay = document.getElementById('btn-center-play');
     this.btnPlay = document.getElementById('btn-play');
     this.progressContainer = document.getElementById('progress-container');
@@ -328,7 +329,9 @@ export class UIController {
       }
     });
 
-    this.btnPip.addEventListener('click', () => this.vc.togglePiP());
+    this.btnPip.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('sn-minimize-player'));
+    });
     this.btnFullscreen.addEventListener('click', () => this.vc.toggleFullscreen(this.playerContainer));
     this.btnScreenshot.addEventListener('click', () => this.vc.captureScreenshot());
     
@@ -336,10 +339,16 @@ export class UIController {
     this.btnCloseSettings.addEventListener('click', () => this.settingsModal.classList.add('hidden'));
 
     this.btnBack.addEventListener('click', () => {
-      // INSTEAD of manually resetting EVERYTHING and hiding the player,
-      // dispatch the minimize event so GlobalPlayer can handle mini mode.
-      window.dispatchEvent(new CustomEvent('sn-minimize-player'));
+      window.dispatchEvent(new CustomEvent('sn-close-player'));
     });
+
+    if (this.btnMinimize) {
+      this.btnMinimize.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('sn-minimize-player'));
+      });
+    }
+
+    window.addEventListener('sn-close-player', () => this.closePlayer());
 
     this.landingFileInput.addEventListener('click', () => { this.landingFileInput.value = ''; });
     this.landingFileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
@@ -541,6 +550,37 @@ export class UIController {
       this.subEngine.enabled = true;
       if (this.addSubInput) this.addSubInput.value = '';
     }
+  }
+
+  closePlayer() {
+    this.playbackTracker.stop();
+    this.vc.unload();
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'none';
+      navigator.mediaSession.metadata = null;
+    }
+    if (this.currentVideoUrl) {
+      URL.revokeObjectURL(this.currentVideoUrl);
+      this.currentVideoUrl = null;
+    }
+    this.subEngine.clear();
+    this.subEngine.enabled = false;
+    this.videoTitle.textContent = 'No Video Loaded';
+    this.subIcon.textContent = 'subtitles_off';
+    this.btnSubtitle.classList.remove('active');
+    
+    this.landingFileInput.value = '';
+    if (this.addSubInput) this.addSubInput.value = '';
+    const addAudioTrackInput = document.getElementById('add-audio-track-input');
+    if (addAudioTrackInput) addAudioTrackInput.value = '';
+
+    this.landing.classList.add('active');
+    this.settingsModal.classList.add('hidden');
+    this.dropZone.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
+    this.pe.start();
+    
+    // Refresh continue watching list
+    this.renderContinueWatching();
   }
 
   updateVolumeUI() {
