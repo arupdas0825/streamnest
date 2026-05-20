@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import GlobalPlayer from '../ui/GlobalPlayer.jsx';
 import { formatTime } from '../utils/timeFormatter.js';
+import { PlaylistManager } from './PlaylistManager.js';
 
 export class UIController {
   constructor(videoCore, subtitleEngine, audioCore, themeManager, particleEngine) {
@@ -16,6 +17,9 @@ export class UIController {
     
     // Mount Global Player System
     this.renderGlobalPlayer();
+    
+    // Initialize Playlist Queue Manager
+    this.playlistManager = new PlaylistManager(this);
     
     this.bindElements();
     this.bindVideoEvents();
@@ -82,6 +86,11 @@ export class UIController {
     this.themeBtns = document.querySelectorAll('.theme-btn');
     this.audioTracksList = document.getElementById('audio-tracks-list');
     this.gestureFeedback = document.getElementById('gesture-feedback');
+    
+    // Series & Episode Navigation Buttons
+    this.btnPrevEp = document.getElementById('btn-prev-ep');
+    this.btnNextEp = document.getElementById('btn-next-ep');
+    this.btnPlaylist = document.getElementById('btn-playlist');
   }
 
   bindVideoEvents() {
@@ -348,6 +357,57 @@ export class UIController {
       });
     }
 
+    if (this.btnPrevEp) {
+      this.btnPrevEp.addEventListener('click', () => {
+        const prev = this.playlistManager.prev();
+        if (prev) {
+          this.playlistManager.playEpisode(this.playlistManager.currentIndex - 1);
+        }
+      });
+    }
+
+    if (this.btnNextEp) {
+      this.btnNextEp.addEventListener('click', () => {
+        const next = this.playlistManager.next();
+        if (next) {
+          this.playlistManager.playEpisode(this.playlistManager.currentIndex + 1);
+        }
+      });
+    }
+
+    if (this.btnPlaylist) {
+      this.btnPlaylist.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('sn-toggle-episodes-drawer'));
+      });
+    }
+
+    // React Navigation Bindings
+    window.addEventListener('sn-play-episode', (e) => {
+      if (e.detail && e.detail.index !== undefined) {
+        this.playlistManager.playEpisode(e.detail.index);
+      }
+    });
+
+    window.addEventListener('sn-play-next', () => {
+      const next = this.playlistManager.next();
+      if (next) {
+        this.playlistManager.playEpisode(this.playlistManager.currentIndex + 1);
+      } else {
+        this.closePlayer();
+      }
+    });
+
+    window.addEventListener('sn-play-prev', () => {
+      const prev = this.playlistManager.prev();
+      if (prev) {
+        this.playlistManager.playEpisode(this.playlistManager.currentIndex - 1);
+      }
+    });
+
+    window.addEventListener('sn-playlist-update', () => {
+      this.updateEpisodeNavButtons();
+    });
+
     window.addEventListener('sn-close-player', () => this.closePlayer());
 
     this.landingFileInput.addEventListener('click', () => { this.landingFileInput.value = ''; });
@@ -509,46 +569,51 @@ export class UIController {
 
   handleFiles(files) {
     if (!files.length) return;
-    const videoFile = Array.from(files).find(f => f.type.startsWith('video/') || f.name.endsWith('.mkv'));
-    const subFile = Array.from(files).find(f => f.name.endsWith('.srt') || f.name.endsWith('.vtt'));
     
-    if (videoFile) {
-      if (this.currentVideoUrl) {
-        URL.revokeObjectURL(this.currentVideoUrl);
-      }
-      this.videoTitle.textContent = videoFile.name;
+    const importedEpisodes = this.playlistManager.importFiles(files);
+    
+    if (importedEpisodes && importedEpisodes.length > 0) {
+      const isMultiple = importedEpisodes.length > 1;
       
-      // Initialize Playback Tracking
-      const mediaId = `sn-${videoFile.name}-${videoFile.size}`;
-      this.resumePosition = this.playbackTracker.init(mediaId, { title: videoFile.name });
+      if (this.btnPrevEp) this.btnPrevEp.style.display = isMultiple ? 'inline-flex' : 'none';
+      if (this.btnNextEp) this.btnNextEp.style.display = isMultiple ? 'inline-flex' : 'none';
+      if (this.btnPlaylist) this.btnPlaylist.style.display = isMultiple ? 'inline-flex' : 'none';
+      
+      this.updateEpisodeNavButtons();
+      this.playlistManager.playEpisode(0);
 
-      const url = URL.createObjectURL(videoFile);
-      this.currentVideoUrl = url;
-      this.vc.load(url);
-      
-      // Notify GlobalPlayer React wrapper
-      window.dispatchEvent(new CustomEvent('sn-open-player', { detail: { title: videoFile.name } }));
-      
       this.landing.classList.remove('active');
       this.pe.stop();
       this.landingFileInput.value = '';
       
       this.vc.video.tabIndex = -1;
       this.vc.video.focus();
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: videoFile.name,
-          artist: 'StreamNest',
-        });
+    } else {
+      const subFile = Array.from(files).find(f => f.name.endsWith('.srt') || f.name.endsWith('.vtt'));
+      if (subFile) {
+        this.subEngine.loadSubtitle(subFile);
+        this.subIcon.textContent = 'subtitles';
+        this.btnSubtitle.classList.add('active');
+        this.subEngine.enabled = true;
+        if (this.addSubInput) this.addSubInput.value = '';
       }
     }
-    
-    if (subFile) {
-      this.subEngine.loadSubtitle(subFile);
-      this.subIcon.textContent = 'subtitles';
-      this.btnSubtitle.classList.add('active');
-      this.subEngine.enabled = true;
-      if (this.addSubInput) this.addSubInput.value = '';
+  }
+
+  updateEpisodeNavButtons() {
+    if (!this.playlistManager || this.playlistManager.episodes.length <= 1) return;
+    const hasPrev = this.playlistManager.currentIndex > 0;
+    const hasNext = this.playlistManager.currentIndex < this.playlistManager.episodes.length - 1;
+
+    if (this.btnPrevEp) {
+      this.btnPrevEp.disabled = !hasPrev;
+      this.btnPrevEp.style.opacity = hasPrev ? '1' : '0.4';
+      this.btnPrevEp.style.cursor = hasPrev ? 'pointer' : 'not-allowed';
+    }
+    if (this.btnNextEp) {
+      this.btnNextEp.disabled = !hasNext;
+      this.btnNextEp.style.opacity = hasNext ? '1' : '0.4';
+      this.btnNextEp.style.cursor = hasNext ? 'pointer' : 'not-allowed';
     }
   }
 
@@ -558,6 +623,9 @@ export class UIController {
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'none';
       navigator.mediaSession.metadata = null;
+    }
+    if (this.playlistManager) {
+      this.playlistManager.clear();
     }
     if (this.currentVideoUrl) {
       URL.revokeObjectURL(this.currentVideoUrl);
@@ -574,13 +642,14 @@ export class UIController {
     const addAudioTrackInput = document.getElementById('add-audio-track-input');
     if (addAudioTrackInput) addAudioTrackInput.value = '';
 
+    if (this.btnPrevEp) this.btnPrevEp.style.display = 'none';
+    if (this.btnNextEp) this.btnNextEp.style.display = 'none';
+    if (this.btnPlaylist) this.btnPlaylist.style.display = 'none';
+
     this.landing.classList.add('active');
     this.settingsModal.classList.add('hidden');
     this.dropZone.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
     this.pe.start();
-    
-    // Refresh continue watching list
-    this.renderContinueWatching();
   }
 
   updateVolumeUI() {

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { PlayerProvider, usePlayerContext } from '../context/PlayerContext.jsx';
 import MiniPlayer from './MiniPlayer.jsx';
 import AmbientTheater from './AmbientTheater.jsx';
+import EpisodesDrawer from './EpisodesDrawer.jsx';
+import NextEpisodeOverlay from './NextEpisodeOverlay.jsx';
 
 const GlobalPlayerContent = ({ videoCore, uiController }) => {
   const { viewMode, videoTitle, isTheaterMode, expand, close, setViewMode, toggleTheater, openFull, minimize } = usePlayerContext();
@@ -73,7 +75,11 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
   return (
     <>
       {viewMode === 'full' && (
-        <AmbientTheater videoElement={videoCore.video} isActive={true} />
+        <>
+          <AmbientTheater videoElement={videoCore.video} isActive={true} />
+          <EpisodesDrawer />
+          <NextEpisodeOverlay videoCore={videoCore} />
+        </>
       )}
       {viewMode === 'mini' && (
         <MiniPlayer 
