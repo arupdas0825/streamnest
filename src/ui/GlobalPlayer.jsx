@@ -4,6 +4,7 @@ import MiniPlayer from './MiniPlayer.jsx';
 import AmbientTheater from './AmbientTheater.jsx';
 import EpisodesDrawer from './EpisodesDrawer.jsx';
 import NextEpisodeOverlay from './NextEpisodeOverlay.jsx';
+import WelcomeIntro from './WelcomeIntro.jsx';
 
 const GlobalPlayerContent = ({ videoCore, uiController }) => {
   const { viewMode, videoTitle, isTheaterMode, expand, close, setViewMode, toggleTheater, openFull, minimize } = usePlayerContext();
@@ -74,6 +75,7 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
 
   return (
     <>
+      <WelcomeIntro />
       {viewMode === 'full' && (
         <>
           <AmbientTheater videoElement={videoCore.video} isActive={true} />
