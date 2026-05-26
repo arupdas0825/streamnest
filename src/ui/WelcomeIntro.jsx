@@ -6,35 +6,38 @@ const WelcomeIntro = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [bloomActive, setBloomActive] = useState(false);
 
-  // Generate a randomized set of background particles once
+  // Optimized background drift particles (Limited count, zero blur filters)
   const particles = useMemo(() => {
     const arr = [];
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 8; i++) {
       arr.push({
         id: i,
-        size: Math.random() * 4 + 2, // 2px - 6px
-        top: Math.random() * 100, // 0% - 100%
-        left: Math.random() * 100,
-        delay: Math.random() * 8, // 0s - 8s delay
-        duration: Math.random() * 15 + 15, // 15s - 30s drift
+        size: Math.random() * 3 + 2, // 2px - 5px
+        top: Math.random() * 80 + 10, // Avoid clipping borders
+        left: Math.random() * 80 + 10,
+        delay: Math.random() * 1.5,
+        duration: Math.random() * 8 + 10, // Snappy drift duration
       });
     }
     return arr;
   }, []);
 
   useEffect(() => {
-    // Check if intro has already been watched in the current session
+    // Check local persistence
     const isIntroWatched = sessionStorage.getItem('sn_intro_watched');
     
-    if (isIntroWatched === 'true') {
-      // Reveal landing screen instantly
+    // Query system preference for reduced motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    if (isIntroWatched === 'true' || prefersReducedMotion) {
+      // Reveal home page instantly
       const landing = document.getElementById('landing-screen');
       if (landing) landing.classList.add('active');
       setIsVisible(false);
       return;
     }
 
-    // Otherwise, boot the intro experience
+    // Launch intro experience
     setIsVisible(true);
     document.body.classList.add('intro-running');
 
@@ -44,13 +47,13 @@ const WelcomeIntro = () => {
       landing.classList.remove('intro-transition');
     }
 
-    // Cinematic Stage 2: Logo expansion & Starburst Lens Bloom at 2.0s
+    // Stage 2: S scales and "treamNest" unfolds at 800ms
     const expandTimer = setTimeout(() => {
       setIsExpanded(true);
       setBloomActive(true);
-    }, 2000);
+    }, 800);
 
-    // Cinematic Stage 3: Smooth dissolve transition into landing screen at 5.0s
+    // Stage 3: Smooth dissolve transition into landing screen at 2.4s
     const fadeTimer = setTimeout(() => {
       setIsFadingOut(true);
       document.body.classList.remove('intro-running');
@@ -58,15 +61,15 @@ const WelcomeIntro = () => {
         landing.classList.add('active');
         landing.classList.add('intro-transition');
       }
-    }, 5000);
+    }, 2400);
 
-    // Fully remove the intro overlay from DOM at 6.2s (after transitions complete)
+    // Completely remove intro layer from DOM at 3.4s
     const hideTimer = setTimeout(() => {
       setIsVisible(false);
       sessionStorage.setItem('sn_intro_watched', 'true');
-    }, 6200);
+    }, 3400);
 
-    // Skip triggers on keyboard shortcuts (Space, Enter, Escape)
+    // Shortcuts for quick bypasses
     const handleKeyDown = (e) => {
       if (e.key === ' ' || e.key === 'Enter' || e.key === 'Escape') {
         e.preventDefault();
@@ -97,18 +100,18 @@ const WelcomeIntro = () => {
       landing.classList.add('intro-transition');
     }
 
-    // Complete the skip transition quickly (in 1.2s to match CSS fade transition)
+    // Wrap up skip fade transition quickly
     setTimeout(() => {
       setIsVisible(false);
       sessionStorage.setItem('sn_intro_watched', 'true');
-    }, 1200);
+    }, 800);
   };
 
   if (!isVisible) return null;
 
   return (
     <div className={`welcome-intro-screen ${isFadingOut ? 'fade-out' : ''}`}>
-      {/* Background Starry Particles */}
+      {/* Optimized particles */}
       {particles.map((p) => (
         <div
           key={p.id}
@@ -124,32 +127,29 @@ const WelcomeIntro = () => {
         />
       ))}
 
-      {/* Layered Cinematic Glow Orbs */}
+      {/* Layered cinematic atmospheres (zero costly blur filters) */}
       <div className="ambient-glow-orb ambient-glow-primary" />
       <div className="ambient-glow-orb ambient-glow-secondary" />
 
-      {/* Ambient Fog Layer */}
+      {/* Cinematic Fog */}
       <div className="ambient-fog" />
 
-      {/* Center Cinematic Lens Flare / Starburst (Blooms when expanded) */}
+      {/* Center starburst flare */}
       <div className={`intro-lens-flare ${bloomActive ? 'bloom-active' : ''}`} />
 
-      {/* Brand logo container */}
+      {/* Logo container */}
       <div className={`intro-brand-container ${isExpanded ? 'is-expanded' : ''}`}>
-        {/* Dynamic Netflix-style S-to-StreamNest text expansion */}
         <div className="intro-logo-wrapper">
           <span className="intro-char-s">S</span>
           <span className="intro-text-rest">treamNest</span>
         </div>
-        
-        {/* Subtitle / Tagline */}
         <p className="intro-tagline">Cinematic Media Space</p>
       </div>
 
-      {/* Skip Intro Glass Pill Button */}
+      {/* Bypass button (pure color layout, avoiding expensive backdrop blur filters) */}
       <button
         onClick={triggerSkip}
-        className="skip-btn-intro fixed bottom-8 right-8 z-[10001] px-5 py-2.5 rounded-full backdrop-blur-md bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 active:scale-95 text-xs font-bold tracking-wider text-zinc-300 hover:text-white uppercase transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-xl hover:shadow-white/5"
+        className="skip-btn-intro fixed bottom-8 right-8 z-[10001] px-5 py-2.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white uppercase transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-xl hover:shadow-zinc-800/10 text-xs font-bold tracking-wider"
       >
         Skip Intro
         <span className="material-symbols-rounded text-sm">arrow_forward</span>

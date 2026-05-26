@@ -431,33 +431,31 @@ body {
   z-index: 10000;
   overflow: hidden;
   opacity: 1;
-  transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .welcome-intro-screen.fade-out {
   opacity: 0;
-  transform: scale(1.05);
+  transform: scale(1.02);
   pointer-events: none;
 }
 
-/* Ambient dynamic particles drift styling */
+/* Ambient dynamic particles drift styling - ZERO blurs, pure opacity dots */
 .cinematic-particle {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 240, 255, 0.4) 0%, transparent 70%);
-  filter: blur(1.5px);
+  background-color: rgba(0, 240, 255, 0.3);
   pointer-events: none;
-  animation: drift 22s linear infinite;
+  animation: drift 14s linear infinite;
   will-change: transform, opacity;
 }
 
-/* Ambient glow orb styles */
+/* Ambient glow orb styles - replaced costly blur(100px) filter with high-softness radial gradients */
 .ambient-glow-orb {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
-  filter: blur(100px);
-  opacity: 0.15;
+  opacity: 0.12;
   mix-blend-mode: screen;
   will-change: transform, opacity;
 }
@@ -465,27 +463,26 @@ body {
 .ambient-glow-primary {
   width: 700px;
   height: 700px;
-  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--primary) 0%, rgba(0, 240, 255, 0.03) 35%, transparent 70%);
   top: -15%;
   left: 15%;
-  animation: pulse-glow 9s ease-in-out infinite alternate;
+  animation: pulse-glow 7s ease-in-out infinite alternate;
 }
 
 .ambient-glow-secondary {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--secondary) 0%, rgba(255, 0, 85, 0.03) 30%, transparent 70%);
   bottom: -15%;
   right: 10%;
-  animation: pulse-glow 11s ease-in-out infinite alternate-reverse;
+  animation: pulse-glow 9s ease-in-out infinite alternate-reverse;
 }
 
-/* Dynamic ambient cinematic fog */
+/* Dynamic ambient cinematic fog - lightweight radial wash */
 .ambient-fog {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(20, 10, 35, 0.15) 0%, transparent 75%);
-  mix-blend-mode: color-dodge;
+  background: radial-gradient(circle at 50% 50%, rgba(20, 10, 35, 0.1) 0%, transparent 75%);
   pointer-events: none;
   z-index: 2;
 }
@@ -511,17 +508,17 @@ body {
   line-height: 1;
 }
 
-/* Giant "S" cinematic character styling */
+/* Giant "S" cinematic character styling - optimized single-layer shadows */
 .intro-char-s {
   font-size: 11.5rem; /* Massive centered start */
   color: #ffffff;
   position: relative;
   display: inline-block;
-  text-shadow: 0 0 50px rgba(0, 240, 255, 0.5), 0 0 100px rgba(255, 0, 85, 0.3);
-  transition: font-size 1.4s cubic-bezier(0.25, 1, 0.5, 1), 
-              text-shadow 1.4s cubic-bezier(0.25, 1, 0.5, 1),
-              transform 1.4s cubic-bezier(0.25, 1, 0.5, 1);
-  animation: s-reveal 2.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  text-shadow: 0 4px 25px rgba(0, 240, 255, 0.35);
+  transition: font-size 1.0s cubic-bezier(0.25, 1, 0.5, 1), 
+              text-shadow 1.0s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 1.0s cubic-bezier(0.25, 1, 0.5, 1);
+  animation: s-reveal 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   will-change: font-size, text-shadow, transform;
 }
 
@@ -530,12 +527,12 @@ body {
   content: 'S';
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 30%, rgba(0, 240, 255, 0.9) 45%, rgba(255, 0, 85, 0.9) 55%, transparent 70%);
+  background: linear-gradient(115deg, transparent 30%, rgba(0, 240, 255, 0.8) 45%, rgba(255, 0, 85, 0.8) 55%, transparent 70%);
   background-size: 250% auto;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: s-light-sweep 4.5s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  animation: s-light-sweep 3.5s cubic-bezier(0.25, 1, 0.5, 1) infinite;
   pointer-events: none;
 }
 
@@ -549,10 +546,10 @@ body {
   color: #ffffff;
   display: inline-block;
   letter-spacing: -2px;
-  transition: max-width 1.5s cubic-bezier(0.25, 1, 0.5, 1), 
-              opacity 1.2s ease-in-out,
-              font-size 1.5s cubic-bezier(0.25, 1, 0.5, 1),
-              margin-left 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: max-width 1.0s cubic-bezier(0.25, 1, 0.5, 1), 
+              opacity 0.8s ease-in-out,
+              font-size 1.0s cubic-bezier(0.25, 1, 0.5, 1),
+              margin-left 1.0s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: max-width, opacity, font-size;
 }
 
@@ -565,7 +562,7 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: s-light-sweep 4.5s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  animation: s-light-sweep 3.5s cubic-bezier(0.25, 1, 0.5, 1) infinite;
   pointer-events: none;
   opacity: 0.8;
 }
@@ -573,7 +570,7 @@ body {
 /* Expanded state (Stage 2) triggers letter expansion */
 .intro-brand-container.is-expanded .intro-char-s {
   font-size: 5.5rem;
-  text-shadow: 0 0 30px rgba(0, 240, 255, 0.3), 0 0 60px rgba(255, 0, 85, 0.15);
+  text-shadow: 0 4px 15px rgba(0, 240, 255, 0.2);
 }
 
 .intro-brand-container.is-expanded .intro-text-rest {
@@ -583,7 +580,7 @@ body {
   margin-left: 0.2rem;
 }
 
-/* Starburst Bloom behind completed logo */
+/* Starburst Bloom - optimized gradient wash without costly CSS blur filters */
 .intro-lens-flare {
   position: absolute;
   top: 50%;
@@ -591,8 +588,7 @@ body {
   transform: translate(-50%, -50%) scale(0);
   width: 450px;
   height: 450px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(0, 240, 255, 0.35) 15%, rgba(255, 0, 85, 0.1) 35%, transparent 70%);
-  filter: blur(10px);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, rgba(0, 240, 255, 0.15) 20%, rgba(255, 0, 85, 0.02) 45%, transparent 70%);
   pointer-events: none;
   z-index: 5;
   mix-blend-mode: screen;
@@ -600,7 +596,7 @@ body {
 }
 
 .intro-lens-flare.bloom-active {
-  animation: flare-bloom-refined 3.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: flare-bloom-refined 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 .intro-tagline {
@@ -611,19 +607,18 @@ body {
   text-transform: uppercase;
   margin-top: 1.5rem;
   opacity: 0;
-  transform: translateY(15px);
+  transform: translateY(10px);
   will-change: opacity, transform;
 }
 
 .intro-brand-container.is-expanded .intro-tagline {
-  animation: tagline-reveal-refined 2.2s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.4s;
+  animation: tagline-reveal-refined 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.3s;
 }
 
 /* Animations keys */
 @keyframes s-reveal {
-  0% { opacity: 0; transform: scale(0.7) rotate(-5deg); filter: blur(15px); }
-  50% { opacity: 0.7; filter: blur(5px); }
-  100% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); }
+  0% { opacity: 0; transform: scale(0.8) rotate(-3deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
 @keyframes s-light-sweep {
@@ -632,39 +627,60 @@ body {
 }
 
 @keyframes drift {
-  0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.08; }
-  50% { transform: translateY(-70px) translateX(25px) rotate(180deg); opacity: 0.35; }
-  100% { transform: translateY(-140px) translateX(0) rotate(360deg); opacity: 0.08; }
+  0% { transform: translateY(0) translateX(0); opacity: 0.1; }
+  50% { transform: translateY(-40px) translateX(15px); opacity: 0.4; }
+  100% { transform: translateY(-80px) translateX(0); opacity: 0.1; }
 }
 
 @keyframes pulse-glow {
-  0% { transform: scale(1) translate(0, 0); opacity: 0.12; }
-  50% { transform: scale(1.1) translate(3%, 2%); opacity: 0.2; }
-  100% { transform: scale(0.95) translate(-2%, -3%); opacity: 0.12; }
+  0% { transform: scale(1) translate(0, 0); opacity: 0.1; }
+  50% { transform: scale(1.05) translate(2%, 1%); opacity: 0.16; }
+  100% { transform: scale(0.98) translate(-1%, -1%); opacity: 0.1; }
 }
 
 @keyframes flare-bloom-refined {
   0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0; }
-  25% { transform: translate(-50%, -50%) scale(1.3) rotate(45deg); opacity: 0.95; }
-  50% { transform: translate(-50%, -50%) scale(1) rotate(90deg); opacity: 0.7; }
-  100% { transform: translate(-50%, -50%) scale(0.8) rotate(135deg); opacity: 0.2; }
+  25% { transform: translate(-50%, -50%) scale(1.2) rotate(30deg); opacity: 0.9; }
+  50% { transform: translate(-50%, -50%) scale(1.0) rotate(60deg); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(0.8) rotate(90deg); opacity: 0.1; }
 }
 
 @keyframes tagline-reveal-refined {
-  0% { opacity: 0; transform: translateY(15px); }
+  0% { opacity: 0; transform: translateY(10px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
 /* Skip button slide reveal */
 .skip-btn-intro {
-  animation: skip-reveal-refined 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards 1s;
+  animation: skip-reveal-refined 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.6s;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(8px);
 }
 
 @keyframes skip-reveal-refined {
-  0% { opacity: 0; transform: translateY(10px); }
+  0% { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Accessibility: prefers-reduced-motion media query system overrides */
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-particle,
+  .ambient-glow-orb,
+  .intro-lens-flare,
+  .intro-char-s,
+  .intro-char-s::before,
+  .intro-text-rest,
+  .intro-text-rest::before,
+  .intro-tagline,
+  .skip-btn-intro {
+    animation: none !important;
+    transition: none !important;
+  }
+  .welcome-intro-screen {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: none !important;
+  }
 }
 
 /* Mobile responsive scaling */
@@ -690,14 +706,14 @@ body {
   }
 }
 
-/* Dynamic smooth blur reveal on actual landing page container when active */
+/* Dynamic smooth fade/scale reveal on actual landing page container when active - ZERO costly blur filters */
 #landing-screen.active.intro-transition {
-  animation: landing-reveal-fade 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: landing-reveal-fade 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 @keyframes landing-reveal-fade {
-  0% { opacity: 0; transform: scale(0.96) translateY(10px); filter: blur(10px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+  0% { opacity: 0; transform: scale(0.98) translateY(5px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 /* Hide logo container in landing screen while intro running to prevent flashes */
