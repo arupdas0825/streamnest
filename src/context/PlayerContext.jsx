@@ -21,9 +21,22 @@ export const PlayerProvider = ({ children }) => {
       }
     };
 
+    const handleToggleDrawer = () => {
+      setIsEpisodesDrawerOpen(prev => !prev);
+    };
+
+    const handleCloseDrawer = () => {
+      setIsEpisodesDrawerOpen(false);
+    };
+
     window.addEventListener('sn-playlist-update', handlePlaylistUpdate);
+    window.addEventListener('sn-toggle-episodes-drawer', handleToggleDrawer);
+    window.addEventListener('sn-close-episodes-drawer', handleCloseDrawer);
+
     return () => {
       window.removeEventListener('sn-playlist-update', handlePlaylistUpdate);
+      window.removeEventListener('sn-toggle-episodes-drawer', handleToggleDrawer);
+      window.removeEventListener('sn-close-episodes-drawer', handleCloseDrawer);
     };
   }, []);
 
