@@ -3,6 +3,7 @@ import { PlayerProvider, usePlayerContext } from '../context/PlayerContext.jsx';
 import MiniPlayer from './MiniPlayer.jsx';
 import AmbientTheater from './AmbientTheater.jsx';
 import EpisodesDrawer from './EpisodesDrawer.jsx';
+import AudioTracksDrawer from './AudioTracksDrawer.jsx';
 import NextEpisodeOverlay from './NextEpisodeOverlay.jsx';
 import WelcomeIntro from './WelcomeIntro.jsx';
 
@@ -80,6 +81,7 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
         <>
           <AmbientTheater videoElement={videoCore.video} isActive={true} />
           <EpisodesDrawer />
+          <AudioTracksDrawer />
           <NextEpisodeOverlay videoCore={videoCore} />
         </>
       )}

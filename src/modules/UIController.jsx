@@ -91,6 +91,10 @@ export class UIController {
     this.btnPrevEp = document.getElementById('btn-prev-ep');
     this.btnNextEp = document.getElementById('btn-next-ep');
     this.btnPlaylist = document.getElementById('btn-playlist');
+
+    // Audio Tracks Elements
+    this.btnAudioTracks = document.getElementById('btn-audio-tracks');
+    this.addAudioTrackDrawerInput = document.getElementById('add-audio-track-drawer-input');
   }
 
   bindVideoEvents() {
@@ -131,6 +135,7 @@ export class UIController {
     });
     this.vc.on('loadedmetadata', () => {
       this.populateAudioTracks();
+      this.emitAudioTracksUpdate();
       
       // Handle Playback Resume
       if (this.resumePosition > 0) {
@@ -410,6 +415,39 @@ export class UIController {
 
     window.addEventListener('sn-close-player', () => this.closePlayer());
 
+    if (this.btnAudioTracks) {
+      this.btnAudioTracks.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('sn-toggle-audio-drawer'));
+      });
+    }
+
+    if (this.addAudioTrackDrawerInput) {
+      this.addAudioTrackDrawerInput.addEventListener('click', () => { this.addAudioTrackDrawerInput.value = ''; });
+      this.addAudioTrackDrawerInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+          Array.from(e.target.files).forEach(file => {
+            this.vc.addExternalAudio(file);
+          });
+          this.populateAudioTracks();
+          this.emitAudioTracksUpdate();
+        }
+      });
+    }
+
+    window.addEventListener('sn-change-audio-track', (e) => {
+      if (e.detail && e.detail.id !== undefined) {
+        this.vc.setExternalAudio(e.detail.id);
+        this.populateAudioTracks();
+        this.emitAudioTracksUpdate();
+      }
+    });
+
+    window.addEventListener('sn-open-audio-drawer-import', () => {
+      if (this.addAudioTrackDrawerInput) {
+        this.addAudioTrackDrawerInput.click();
+      }
+    });
+
     this.landingFileInput.addEventListener('click', () => { this.landingFileInput.value = ''; });
     this.landingFileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
     this.dropZone.addEventListener('dragover', (e) => { e.preventDefault(); this.dropZone.classList.add('dragover'); });
@@ -570,6 +608,14 @@ export class UIController {
   handleFiles(files) {
     if (!files.length) return;
     
+    // Auto import dropped audio files
+    const audioFiles = Array.from(files).filter(f => f.type.startsWith('audio/') || f.name.endsWith('.mp3') || f.name.endsWith('.m4a') || f.name.endsWith('.aac') || f.name.endsWith('.ac3') || f.name.endsWith('.ogg') || f.name.endsWith('.wav'));
+    if (audioFiles.length > 0) {
+      audioFiles.forEach(file => {
+        this.vc.addExternalAudio(file);
+      });
+    }
+    
     const importedEpisodes = this.playlistManager.importFiles(files);
     
     if (importedEpisodes && importedEpisodes.length > 0) {
@@ -660,6 +706,65 @@ export class UIController {
       this.btnMute.innerHTML = '<span class="material-symbols-rounded">volume_up</span>';
       this.volumeSlider.value = this.vc.state.volume;
     }
+  }
+
+  emitAudioTracksUpdate() {
+    const nativeTracks = this.vc.getAudioTracks();
+    const externalTracks = this.vc.externalAudios || [];
+    const tracks = [];
+    
+    // Add native tracks
+    if (nativeTracks.length > 0) {
+      for (let i = 0; i < nativeTracks.length; i++) {
+        const t = nativeTracks[i];
+        tracks.push({
+          id: `native-${i}`,
+          index: i,
+          name: t.label || `Embedded Track ${i + 1}`,
+          language: t.language || 'unknown',
+          type: 'native',
+          isActive: (t.enabled && !this.vc.activeExternalAudio)
+        });
+      }
+    } else {
+      // Default fallback
+      tracks.push({
+        id: 'native',
+        index: 0,
+        name: 'Default Embedded Audio',
+        language: 'default',
+        type: 'native',
+        isActive: !this.vc.activeExternalAudio
+      });
+    }
+
+    // Add external tracks
+    externalTracks.forEach(t => {
+      const isActive = this.vc.activeExternalAudio === t.element;
+      tracks.push({
+        id: t.id,
+        name: t.name,
+        type: 'external',
+        isActive: isActive
+      });
+    });
+
+    let currentTrackId = 'native';
+    if (this.vc.activeExternalAudio) {
+      const activeTrack = externalTracks.find(t => t.element === this.vc.activeExternalAudio);
+      if (activeTrack) currentTrackId = activeTrack.id;
+    } else if (nativeTracks.length > 0) {
+      for (let i = 0; i < nativeTracks.length; i++) {
+        if (nativeTracks[i].enabled) currentTrackId = `native-${i}`;
+      }
+    }
+
+    window.dispatchEvent(new CustomEvent('sn-audio-tracks-update', {
+      detail: {
+        tracks,
+        currentTrackId
+      }
+    }));
   }
 
   formatTime(seconds) {

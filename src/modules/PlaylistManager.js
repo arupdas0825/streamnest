@@ -114,6 +114,7 @@ export class PlaylistManager {
    * Load and play the episode at index
    */
   playEpisode(index, preserveSettings = true) {
+    const prevIndex = this.currentIndex;
     const ep = this.setIndex(index);
     if (!ep) return false;
 
@@ -126,6 +127,18 @@ export class PlaylistManager {
     // Clean up old object URL
     if (this.currentUrl) {
       URL.revokeObjectURL(this.currentUrl);
+    }
+
+    // Clean up previous external audios to prevent overlap on new episode (if changed)
+    if (prevIndex !== index && this.ui.vc.externalAudios) {
+      this.ui.vc.externalAudios.forEach(t => {
+        t.element.pause();
+        t.element.removeAttribute("src");
+        t.element.load();
+        if (t.url) URL.revokeObjectURL(t.url);
+      });
+      this.ui.vc.externalAudios = [];
+      this.ui.vc.activeExternalAudio = null;
     }
 
     // Set new title
