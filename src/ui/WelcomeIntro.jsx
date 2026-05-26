@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 const WelcomeIntro = () => {
-  const [isVisible, setIsVisible] = useState(false);
+  // Synchronous check during initial render to avoid visual flashing of landing page
+  const isWatched = typeof window !== 'undefined' && window.sn_intro_watched === true;
+  
+  const [isVisible, setIsVisible] = useState(!isWatched);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [bloomActive, setBloomActive] = useState(false);
@@ -23,22 +26,14 @@ const WelcomeIntro = () => {
   }, []);
 
   useEffect(() => {
-    // Check local persistence
-    const isIntroWatched = sessionStorage.getItem('sn_intro_watched');
-    
-    // Query system preference for reduced motion
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
-    if (isIntroWatched === 'true' || prefersReducedMotion) {
-      // Reveal home page instantly
+    // If already watched, ensure landing page is active and do nothing
+    if (window.sn_intro_watched === true) {
       const landing = document.getElementById('landing-screen');
       if (landing) landing.classList.add('active');
-      setIsVisible(false);
       return;
     }
 
     // Launch intro experience
-    setIsVisible(true);
     document.body.classList.add('intro-running');
 
     const landing = document.getElementById('landing-screen');
@@ -66,7 +61,7 @@ const WelcomeIntro = () => {
     // Completely remove intro layer from DOM at 3.4s
     const hideTimer = setTimeout(() => {
       setIsVisible(false);
-      sessionStorage.setItem('sn_intro_watched', 'true');
+      window.sn_intro_watched = true;
     }, 3400);
 
     // Shortcuts for quick bypasses
@@ -103,7 +98,7 @@ const WelcomeIntro = () => {
     // Wrap up skip fade transition quickly
     setTimeout(() => {
       setIsVisible(false);
-      sessionStorage.setItem('sn_intro_watched', 'true');
+      window.sn_intro_watched = true;
     }, 800);
   };
 
