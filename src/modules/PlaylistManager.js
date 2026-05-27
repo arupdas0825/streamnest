@@ -37,15 +37,30 @@ export class PlaylistManager {
       const resumeTime = (saved && saved.progress < 0.95 && saved.currentTime > 5) ? saved.currentTime : 0;
       const progress = saved ? saved.progress : 0;
       
-      return {
+      const epObject = {
         id: mediaId,
         file,
         name: file.name,
         size: file.size,
         parsed,
         resumeTime,
-        progress
+        progress,
+        audioTracks: []
       };
+
+      // Asynchronously parse audio tracks from MKV/MP4 headers
+      import('../utils/audioTrackParser.js').then(module => {
+        module.parseAudioTracks(file).then(tracks => {
+          epObject.audioTracks = tracks;
+          // If this file matches the currently loaded episode, refresh UI tracks list
+          if (this.currentIndex !== -1 && this.episodes[this.currentIndex]?.id === mediaId) {
+            this.ui.emitAudioTracksUpdate();
+            this.ui.populateAudioTracks();
+          }
+        });
+      });
+
+      return epObject;
     });
 
     // Auto sort: primary by show, secondary by season, tertiary by episode, quaternary by name

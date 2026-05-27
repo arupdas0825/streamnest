@@ -436,7 +436,15 @@ export class UIController {
 
     window.addEventListener('sn-change-audio-track', (e) => {
       if (e.detail && e.detail.id !== undefined) {
-        this.vc.setExternalAudio(e.detail.id);
+        const id = e.detail.id;
+        if (id.startsWith('embedded-')) {
+          const index = parseInt(id.split('-')[1]);
+          this.currentEmbeddedTrackIndex = index;
+          this.vc.setExternalAudio('native'); // Turn off external audio
+          this.vc.setAudioTrack(index);      // Switch native track (Safari support)
+        } else {
+          this.vc.setExternalAudio(id);
+        }
         this.populateAudioTracks();
         this.emitAudioTracksUpdate();
       }
@@ -709,19 +717,41 @@ export class UIController {
   }
 
   emitAudioTracksUpdate() {
+    const currentEpisode = this.playlistManager ? this.playlistManager.current() : null;
+    const parsedTracks = currentEpisode ? (currentEpisode.audioTracks || []) : [];
     const nativeTracks = this.vc.getAudioTracks();
     const externalTracks = this.vc.externalAudios || [];
     const tracks = [];
     
-    // Add native tracks
-    if (nativeTracks.length > 0) {
+    // Add parsed embedded tracks or native tracks
+    if (parsedTracks.length > 0) {
+      parsedTracks.forEach((t, i) => {
+        const isActive = this.vc.activeExternalAudio 
+          ? false 
+          : (nativeTracks.length > 0 
+              ? (nativeTracks[i]?.enabled || i === 0) 
+              : (this.currentEmbeddedTrackIndex !== undefined ? this.currentEmbeddedTrackIndex === i : i === 0));
+        
+        tracks.push({
+          id: `embedded-${i}`,
+          index: i,
+          name: t.name || `Track ${i + 1}`,
+          language: t.language || 'unknown',
+          channels: t.channels || 'Stereo',
+          codec: t.codec || 'AAC',
+          type: 'embedded',
+          isActive: isActive
+        });
+      });
+    } else if (nativeTracks.length > 0) {
       for (let i = 0; i < nativeTracks.length; i++) {
         const t = nativeTracks[i];
         tracks.push({
           id: `native-${i}`,
           index: i,
-          name: t.label || `Embedded Track ${i + 1}`,
+          name: t.label || `Track ${i + 1}`,
           language: t.language || 'unknown',
+          channels: 'Stereo',
           type: 'native',
           isActive: (t.enabled && !this.vc.activeExternalAudio)
         });
@@ -753,6 +783,8 @@ export class UIController {
     if (this.vc.activeExternalAudio) {
       const activeTrack = externalTracks.find(t => t.element === this.vc.activeExternalAudio);
       if (activeTrack) currentTrackId = activeTrack.id;
+    } else if (parsedTracks.length > 0) {
+      currentTrackId = `embedded-${this.currentEmbeddedTrackIndex !== undefined ? this.currentEmbeddedTrackIndex : 0}`;
     } else if (nativeTracks.length > 0) {
       for (let i = 0; i < nativeTracks.length; i++) {
         if (nativeTracks[i].enabled) currentTrackId = `native-${i}`;
