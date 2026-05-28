@@ -66,7 +66,17 @@
             <div class="progress-buffer" id="progress-buffer"></div>
             <div class="progress-fill" id="progress-fill"></div>
             <div class="progress-thumb" id="progress-thumb"></div>
-            <div class="progress-tooltip" id="progress-tooltip">00:00</div>
+            <div class="progress-tooltip" id="progress-tooltip">
+              <div class="seek-preview-container">
+                <div class="seek-preview-frame">
+                  <div id="seek-preview-spinner" class="seek-preview-spinner">
+                    <span class="material-symbols-rounded animate-spin">sync</span>
+                  </div>
+                  <img id="seek-preview-img" src="" alt="Seek Preview" class="hidden" />
+                </div>
+                <span id="seek-preview-time">00:00</span>
+              </div>
+            </div>
           </div>
           
           <div class="controls-row">

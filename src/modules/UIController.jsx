@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import GlobalPlayer from '../ui/GlobalPlayer.jsx';
 import { formatTime } from '../utils/timeFormatter.js';
 import { PlaylistManager } from './PlaylistManager.js';
+import { ThumbnailGenerator } from '../utils/ThumbnailGenerator.js';
 
 export class UIController {
   constructor(videoCore, subtitleEngine, audioCore, themeManager, particleEngine) {
@@ -14,6 +15,7 @@ export class UIController {
     this.pe = particleEngine;
     this.playbackTracker = new PlaybackTracker(this.vc);
     this.resumePosition = 0;
+    this.thumbnailGenerator = null;
     
     // Mount Global Player System
     this.renderGlobalPlayer();
@@ -57,6 +59,9 @@ export class UIController {
     this.progressBuffer = document.getElementById('progress-buffer');
     this.progressThumb = document.getElementById('progress-thumb');
     this.progressTooltip = document.getElementById('progress-tooltip');
+    this.seekPreviewImg = document.getElementById('seek-preview-img');
+    this.seekPreviewSpinner = document.getElementById('seek-preview-spinner');
+    this.seekPreviewTime = document.getElementById('seek-preview-time');
     this.btnMute = document.getElementById('btn-mute');
     this.volumeSlider = document.getElementById('volume-slider');
     this.timeCurrent = document.getElementById('time-current');
@@ -143,6 +148,18 @@ export class UIController {
     this.vc.on('loadedmetadata', () => {
       this.populateAudioTracks();
       this.emitAudioTracksUpdate();
+      
+      // Setup timeline thumbnail generator
+      if (this.thumbnailGenerator) {
+        this.thumbnailGenerator.destroy();
+        this.thumbnailGenerator = null;
+      }
+      if (this.currentVideoUrl && this.vc.state.duration) {
+        this.thumbnailGenerator = new ThumbnailGenerator(
+          this.currentVideoUrl,
+          this.vc.state.duration
+        );
+      }
       
       // Handle Playback Resume
       if (this.resumePosition > 0) {
@@ -310,8 +327,76 @@ export class UIController {
       const rect = this.progressContainer.getBoundingClientRect();
       let pos = (e.clientX - rect.left) / rect.width;
       pos = Math.max(0, Math.min(1, pos));
+      
+      this.progressTooltip.classList.remove('is-mobile');
       this.progressTooltip.style.left = `${pos * 100}%`;
-      this.progressTooltip.textContent = this.formatTime(pos * this.vc.state.duration);
+      
+      const targetTime = pos * this.vc.state.duration;
+      this.seekPreviewTime.textContent = this.formatTime(targetTime);
+      
+      if (this.thumbnailGenerator) {
+        this.seekPreviewSpinner.classList.remove('hidden');
+        this.seekPreviewImg.classList.add('hidden');
+        
+        this.thumbnailGenerator.getThumbnail(targetTime, (dataUrl) => {
+          if (dataUrl) {
+            this.seekPreviewImg.src = dataUrl;
+            this.seekPreviewImg.classList.remove('hidden');
+            this.seekPreviewSpinner.classList.add('hidden');
+          }
+        });
+      } else {
+        this.seekPreviewSpinner.classList.add('hidden');
+        this.seekPreviewImg.classList.add('hidden');
+      }
+    });
+
+    // Touch screen mobile seek thumbnail dragging events
+    const handleTouchUpdate = (e) => {
+      if (!e.touches.length || !this.vc.state.duration) return;
+      const rect = this.progressContainer.getBoundingClientRect();
+      const touchX = e.touches[0].clientX;
+      let pos = (touchX - rect.left) / rect.width;
+      pos = Math.max(0, Math.min(1, pos));
+      
+      this.progressTooltip.classList.add('is-mobile');
+      this.progressContainer.classList.add('is-active');
+      this.progressTooltip.style.left = `${pos * 100}%`;
+      
+      const targetTime = pos * this.vc.state.duration;
+      this.seekPreviewTime.textContent = this.formatTime(targetTime);
+      
+      if (this.thumbnailGenerator) {
+        this.seekPreviewSpinner.classList.remove('hidden');
+        this.seekPreviewImg.classList.add('hidden');
+        
+        this.thumbnailGenerator.getThumbnail(targetTime, (dataUrl) => {
+          if (dataUrl) {
+            this.seekPreviewImg.src = dataUrl;
+            this.seekPreviewImg.classList.remove('hidden');
+            this.seekPreviewSpinner.classList.add('hidden');
+          }
+        });
+      }
+    };
+
+    this.progressContainer.addEventListener('touchstart', (e) => {
+      handleTouchUpdate(e);
+    }, { passive: true });
+
+    this.progressContainer.addEventListener('touchmove', (e) => {
+      handleTouchUpdate(e);
+    }, { passive: true });
+
+    this.progressContainer.addEventListener('touchend', (e) => {
+      this.progressContainer.classList.remove('is-active');
+      if (e.changedTouches.length && this.vc.state.duration) {
+        const rect = this.progressContainer.getBoundingClientRect();
+        const touchX = e.changedTouches[0].clientX;
+        let pos = (touchX - rect.left) / rect.width;
+        pos = Math.max(0, Math.min(1, pos));
+        this.vc.seek(pos * this.vc.state.duration);
+      }
     });
 
     this.btnMute.addEventListener('click', () => {
@@ -689,6 +774,12 @@ export class UIController {
 
   closePlayer() {
     this.playbackTracker.stop();
+    
+    if (this.thumbnailGenerator) {
+      this.thumbnailGenerator.destroy();
+      this.thumbnailGenerator = null;
+    }
+
     this.vc.unload();
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'none';
