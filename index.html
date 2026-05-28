@@ -186,9 +186,38 @@
       </div>
       
       <div class="tab-content" id="tab-playback">
-        <div class="fx-row">
+        <div class="fx-row" style="margin-bottom: 12px;">
           <label for="setting-autoplay">Autoplay Next Episode</label>
           <input type="checkbox" id="setting-autoplay" checked />
+        </div>
+        
+        <div style="border-top: 1px solid var(--glass-border); margin: 15px 0 10px 0; padding-top: 15px;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; color: var(--primary);">Skip Intro & Recap</h4>
+          
+          <div class="fx-row" style="margin-bottom: 12px;">
+            <label for="setting-skip-enabled">Enable Skip Prompts</label>
+            <input type="checkbox" id="setting-skip-enabled" checked />
+          </div>
+          
+          <div class="fx-row" style="margin-bottom: 10px;">
+            <label style="font-size: 13px; color: var(--text-dim);">Recap Window (s)</label>
+            <div style="display: flex; gap: 5px; align-items: center;">
+              <input type="number" id="timing-recap-start" min="0" placeholder="Start" style="width: 55px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 4px; border-radius: 4px; font-size:12px;" />
+              <span style="color:var(--text-dim); font-size:12px;">to</span>
+              <input type="number" id="timing-recap-end" min="0" placeholder="End" style="width: 55px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 4px; border-radius: 4px; font-size:12px;" />
+            </div>
+          </div>
+          
+          <div class="fx-row" style="margin-bottom: 15px;">
+            <label style="font-size: 13px; color: var(--text-dim);">Intro Window (s)</label>
+            <div style="display: flex; gap: 5px; align-items: center;">
+              <input type="number" id="timing-intro-start" min="0" placeholder="Start" style="width: 55px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 4px; border-radius: 4px; font-size:12px;" />
+              <span style="color:var(--text-dim); font-size:12px;">to</span>
+              <input type="number" id="timing-intro-end" min="0" placeholder="End" style="width: 55px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 4px; border-radius: 4px; font-size:12px;" />
+            </div>
+          </div>
+          
+          <button id="btn-save-timings" class="btn-primary" style="padding: 8px 12px; font-size: 11px; width: 100%; border-radius: 6px; box-shadow: none;">Save Timestamps</button>
         </div>
       </div>
 

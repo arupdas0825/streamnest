@@ -5,6 +5,7 @@ import GlobalPlayer from '../ui/GlobalPlayer.jsx';
 import { formatTime } from '../utils/timeFormatter.js';
 import { PlaylistManager } from './PlaylistManager.js';
 import { ThumbnailGenerator } from '../utils/ThumbnailGenerator.js';
+import { SkipTimingManager } from '../utils/SkipTimingManager.js';
 
 export class UIController {
   constructor(videoCore, subtitleEngine, audioCore, themeManager, particleEngine) {
@@ -98,6 +99,12 @@ export class UIController {
       const savedAutoplay = localStorage.getItem('sn-autoplay') !== 'false';
       this.settingAutoplay.checked = savedAutoplay;
     }
+    this.settingSkipEnabled = document.getElementById('setting-skip-enabled');
+    this.timingRecapStart = document.getElementById('timing-recap-start');
+    this.timingRecapEnd = document.getElementById('timing-recap-end');
+    this.timingIntroStart = document.getElementById('timing-intro-start');
+    this.timingIntroEnd = document.getElementById('timing-intro-end');
+    this.btnSaveTimings = document.getElementById('btn-save-timings');
     
     // Series & Episode Navigation Buttons
     this.btnPrevEp = document.getElementById('btn-prev-ep');
@@ -159,6 +166,18 @@ export class UIController {
           this.currentVideoUrl,
           this.vc.state.duration
         );
+      }
+
+      // Load Skip Timestamps for current episode
+      if (this.playlistManager && this.vc.state.duration) {
+        const currentEpisode = this.playlistManager.current();
+        if (currentEpisode) {
+          const timings = SkipTimingManager.getTimings(currentEpisode.id, this.vc.state.duration);
+          if (this.timingRecapStart) this.timingRecapStart.value = timings.recapStart || '';
+          if (this.timingRecapEnd) this.timingRecapEnd.value = timings.recapEnd || '';
+          if (this.timingIntroStart) this.timingIntroStart.value = timings.introStart || '';
+          if (this.timingIntroEnd) this.timingIntroEnd.value = timings.introEnd || '';
+        }
       }
       
       // Handle Playback Resume
@@ -667,6 +686,40 @@ export class UIController {
         const enabled = this.settingAutoplay.checked;
         localStorage.setItem('sn-autoplay', enabled);
         window.dispatchEvent(new CustomEvent('sn-autoplay-change', { detail: { enabled } }));
+      });
+    }
+
+    if (this.settingSkipEnabled) {
+      this.settingSkipEnabled.checked = localStorage.getItem('sn-skip-enabled') !== 'false';
+      this.settingSkipEnabled.addEventListener('change', () => {
+        const enabled = this.settingSkipEnabled.checked;
+        localStorage.setItem('sn-skip-enabled', enabled);
+        window.dispatchEvent(new CustomEvent('sn-skip-enabled-change', { detail: { enabled } }));
+      });
+    }
+
+    if (this.btnSaveTimings) {
+      this.btnSaveTimings.addEventListener('click', () => {
+        if (!this.playlistManager) return;
+        const currentEpisode = this.playlistManager.current();
+        if (!currentEpisode) return;
+
+        const timings = {
+          recapStart: Math.max(0, parseInt(this.timingRecapStart.value) || 0),
+          recapEnd: Math.max(0, parseInt(this.timingRecapEnd.value) || 0),
+          introStart: Math.max(0, parseInt(this.timingIntroStart.value) || 0),
+          introEnd: Math.max(0, parseInt(this.timingIntroEnd.value) || 0)
+        };
+
+        SkipTimingManager.saveTimings(currentEpisode.id, timings);
+        this.showFeedback('Timestamps Saved!');
+
+        window.dispatchEvent(new CustomEvent('sn-skip-timings-change', {
+          detail: {
+            mediaId: currentEpisode.id,
+            timings
+          }
+        }));
       });
     }
   }

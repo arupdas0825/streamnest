@@ -5,6 +5,7 @@ import AmbientTheater from './AmbientTheater.jsx';
 import EpisodesDrawer from './EpisodesDrawer.jsx';
 import AudioTracksDrawer from './AudioTracksDrawer.jsx';
 import NextEpisodeOverlay from './NextEpisodeOverlay.jsx';
+import SkipOverlay from './SkipOverlay.jsx';
 import WelcomeIntro from './WelcomeIntro.jsx';
 
 const GlobalPlayerContent = ({ videoCore, uiController }) => {
@@ -83,6 +84,7 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
           <EpisodesDrawer />
           <AudioTracksDrawer />
           <NextEpisodeOverlay videoCore={videoCore} />
+          <SkipOverlay videoCore={videoCore} />
         </>
       )}
       {viewMode === 'mini' && (
