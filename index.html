@@ -120,6 +120,7 @@
         <button class="tab-btn" data-tab="subtitle">Subtitles</button>
         <button class="tab-btn" data-tab="theme">Theme</button>
         <button class="tab-btn" data-tab="tracks">Tracks</button>
+        <button class="tab-btn" data-tab="playback">Playback</button>
       </div>
       
       <div class="tab-content active" id="tab-audio">
@@ -172,6 +173,13 @@
           MKV multi-audio is often not supported by browsers natively. You can upload external audio tracks here to sync with the video.
         </p>
         <div id="audio-tracks-list" class="tracks-list">No additional audio tracks detected.</div>
+      </div>
+      
+      <div class="tab-content" id="tab-playback">
+        <div class="fx-row">
+          <label for="setting-autoplay">Autoplay Next Episode</label>
+          <input type="checkbox" id="setting-autoplay" checked />
+        </div>
       </div>
 
     </div>

@@ -11,6 +11,9 @@ export const PlayerProvider = ({ children }) => {
   const [playlist, setPlaylist] = useState([]);
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(-1);
   const [isEpisodesDrawerOpen, setIsEpisodesDrawerOpen] = useState(false);
+  
+  // Autoplay Setting State
+  const [isAutoplayEnabled, setIsAutoplayEnabled] = useState(localStorage.getItem('sn-autoplay') !== 'false');
 
   // Audio Tracks System States
   const [audioTracks, setAudioTracks] = useState([]);
@@ -42,6 +45,19 @@ export const PlayerProvider = ({ children }) => {
       window.removeEventListener('sn-playlist-update', handlePlaylistUpdate);
       window.removeEventListener('sn-toggle-episodes-drawer', handleToggleDrawer);
       window.removeEventListener('sn-close-episodes-drawer', handleCloseDrawer);
+    };
+  }, []);
+
+  // Synchronize Autoplay settings from vanilla JS
+  useEffect(() => {
+    const handleAutoplayChange = (e) => {
+      if (e.detail && e.detail.enabled !== undefined) {
+        setIsAutoplayEnabled(e.detail.enabled);
+      }
+    };
+    window.addEventListener('sn-autoplay-change', handleAutoplayChange);
+    return () => {
+      window.removeEventListener('sn-autoplay-change', handleAutoplayChange);
     };
   }, []);
 
@@ -143,6 +159,7 @@ export const PlayerProvider = ({ children }) => {
       viewMode, videoTitle, isTheaterMode,
       playlist, currentEpisodeIndex, isEpisodesDrawerOpen,
       audioTracks, currentAudioTrackId, isAudioDrawerOpen,
+      isAutoplayEnabled,
       minimize, expand, close, openFull, toggleTheater,
       setViewMode, playEpisode, playNext, playPrev,
       toggleEpisodesDrawer, closeEpisodesDrawer, setIsEpisodesDrawerOpen,

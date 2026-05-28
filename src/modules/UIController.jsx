@@ -87,6 +87,13 @@ export class UIController {
     this.audioTracksList = document.getElementById('audio-tracks-list');
     this.gestureFeedback = document.getElementById('gesture-feedback');
     
+    // Playback Settings Elements
+    this.settingAutoplay = document.getElementById('setting-autoplay');
+    if (this.settingAutoplay) {
+      const savedAutoplay = localStorage.getItem('sn-autoplay') !== 'false';
+      this.settingAutoplay.checked = savedAutoplay;
+    }
+    
     // Series & Episode Navigation Buttons
     this.btnPrevEp = document.getElementById('btn-prev-ep');
     this.btnNextEp = document.getElementById('btn-next-ep');
@@ -568,6 +575,15 @@ export class UIController {
     this.fxBass.addEventListener('input', (e) => this.audioCore.setBass(parseFloat(e.target.value)));
     this.fxTreble.addEventListener('input', (e) => this.audioCore.setTreble(parseFloat(e.target.value)));
     this.fxClarity.addEventListener('input', (e) => this.audioCore.setClarity(parseFloat(e.target.value)));
+
+    // Playback Settings bindings
+    if (this.settingAutoplay) {
+      this.settingAutoplay.addEventListener('change', () => {
+        const enabled = this.settingAutoplay.checked;
+        localStorage.setItem('sn-autoplay', enabled);
+        window.dispatchEvent(new CustomEvent('sn-autoplay-change', { detail: { enabled } }));
+      });
+    }
   }
 
   populateAudioTracks() {

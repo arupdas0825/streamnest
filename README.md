@@ -11,9 +11,17 @@
 
 ### 🎥 Playback & Media Handling
 - **Local Media Support**: Seamlessly drag and drop `MP4`, `WebM`, and `MKV` files.
-- **Multi-Audio Track Support**: Load external audio files to sync with videos (perfect for MKV files without native browser audio support).
+- **Embedded Audio Header Demuxer**: Uses a fast client-side binary parser (EBML for MKV, ISO BMFF for MP4) that reads dropped file headers in milliseconds, extracting exact track IDs, language codes (e.g. Hindi, English, Spanish), codecs, and channel layouts.
+- **Premium VLC/Netflix Audio UI**: Beautiful card-based audio browser displaying badges (e.g., `EMBEDDED` / `SYNCED EXT`) and channel specs (e.g., `Dolby 5.1 • AC3` or `Stereo • AAC`), with glowing active checkmarks and zero technical debug warnings.
+- **Cinema-Sync Audio**: Smoothly load and synchronize external local audio tracks with the main video timeline (perfect for browsers lacking native multi-track decoding).
 - **Picture-in-Picture (PiP)**: Keep watching while navigating other apps.
 - **Screenshot Capture**: Instantly snap high-quality PNG frames from your media.
+
+### 📺 Cinematic OTT Episode Browser
+- **Netflix/Prime Episode Cards**: Horizontal episode cards featuring an aspect-video landscape thumbnail placeholder on the left, with clean metadata and watch progress on the right.
+- **Dynamic Gradient Thumbnails**: Programmatically shifts through 6 curated cinematic gradients based on episode index to avoid repetitive grids.
+- **Smart Season Pill Selector**: Sleek horizontal season selection tabs that filter list grids instantly and auto-synchronize to follow the active episode's season.
+- **Playing Indicators**: Displays a vertical glowing pulse line, background breathing highlights, and an animated equalizing soundwave in the card thumbnail.
 
 ### 🎛️ Pro Audio Engine (Web Audio API)
 - **10-Band Equalizer**: Precision tuning from 32Hz to 16kHz.
