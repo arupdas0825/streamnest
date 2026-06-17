@@ -667,3 +667,98 @@ body {
   }
 }
 
+/* ─── Drag & Drop Conic Glow borders ────────────────────────── */
+#drop-zone-wrapper {
+  position: relative;
+  width: min(100%, 504px);
+  height: 304px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drop-zone-glow-1,
+.drop-zone-glow-2,
+.drop-zone-glow-3 {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.35;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Base Blur */
+.drop-zone-glow-1 {
+  filter: blur(8px);
+}
+.drop-zone-glow-1::before {
+  content: '';
+  position: absolute;
+  width: 1000px;
+  height: 1000px;
+  background-repeat: no-repeat;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(60deg);
+  background: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%);
+  transition: transform 2s ease;
+}
+
+.drop-zone-glow-2 {
+  filter: blur(4px);
+}
+.drop-zone-glow-2::before {
+  content: '';
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  background-repeat: no-repeat;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(82deg);
+  background: conic-gradient(rgba(0,0,0,0), #18116a, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #6e1b60, rgba(0,0,0,0) 60%);
+  transition: transform 2s ease;
+}
+
+.drop-zone-glow-3 {
+  filter: blur(1.5px);
+  opacity: 0.6;
+}
+.drop-zone-glow-3::before {
+  content: '';
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  background-repeat: no-repeat;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(83deg);
+  background: conic-gradient(rgba(0,0,0,0) 0%, #a099d8, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 50%, #dfa2da, rgba(0,0,0,0) 58%);
+  filter: brightness(1.4);
+  transition: transform 2s ease;
+}
+
+/* Hover/active spin transitions */
+#drop-zone-wrapper:hover .drop-zone-glow-1::before {
+  transform: translate(-50%, -50%) rotate(-120deg);
+}
+#drop-zone-wrapper:hover .drop-zone-glow-2::before {
+  transform: translate(-50%, -50%) rotate(-98deg);
+}
+#drop-zone-wrapper:hover .drop-zone-glow-3::before {
+  transform: translate(-50%, -50%) rotate(-97deg);
+}
+
+/* Make sure the main drop-zone sits above the glow layers */
+#drop-zone {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  max-width: 500px;
+  max-height: 300px;
+}
+
