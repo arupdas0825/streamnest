@@ -57,12 +57,12 @@ body {
 }
 #landing-screen.active { opacity: 1; pointer-events: all; }
 
-/* Subtle dark vignette overlay — keeps content readable over the animated dots */
+/* Very subtle dark vignette — readable content without hiding Three.js dots */
 #landing-screen::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 30%, rgba(5, 5, 20, 0.55) 0%, rgba(5, 5, 12, 0.85) 100%);
+  background: radial-gradient(ellipse at 50% 40%, rgba(3, 3, 12, 0.10) 0%, rgba(3, 3, 10, 0.32) 100%);
   pointer-events: none;
   z-index: -1;
 }
@@ -269,7 +269,7 @@ body {
 .huge-icon-btn:hover { background: var(--primary); color: #000; transform: scale(1.1); box-shadow: 0 0 20px var(--primary-glow); }
 .huge-icon-btn span { font-size: 48px; }
 
-.bottom-bar { padding: 0 30px 25px 30px; }
+.bottom-bar { padding: 0 20px 20px; }
 .progress-container { height: 24px; position: relative; display: flex; align-items: center; cursor: pointer; margin-bottom: 10px; }
 .progress-bg, .progress-buffer, .progress-fill { position: absolute; height: 4px; border-radius: 2px; transition: height 0.2s; }
 .progress-bg { width: 100%; background: rgba(255,255,255,0.2); }
@@ -373,18 +373,74 @@ body {
   height: 103.5px;
 }
 
-.controls-row { display: flex; justify-content: space-between; align-items: center; }
-.controls-left, .controls-right { display: flex; align-items: center; gap: 15px; }
-.icon-btn { background: transparent; border: none; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 8px; transition: all 0.2s; }
-.icon-btn:hover { background: rgba(255,255,255,0.1); color: var(--primary); }
-.icon-btn span { font-size: 28px; }
-.text-btn { font-family: var(--font-main); font-size: 16px; font-weight: 600; padding: 8px 12px; }
+/* ─── Premium Floating Dock ───────────────────────────────────────── */
+.controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(6, 6, 14, 0.80);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  padding: 6px 14px;
+  box-shadow:
+    0 14px 44px rgba(0, 0, 0, 0.72),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 0 0 0.5px rgba(255, 255, 255, 0.03) inset;
+  transition: box-shadow 0.35s ease;
+}
+.controls-row:hover {
+  box-shadow:
+    0 14px 44px rgba(0, 0, 0, 0.72),
+    0 1px 0 rgba(255, 255, 255, 0.07) inset,
+    0 0 40px rgba(0, 240, 255, 0.06);
+}
 
-.time-display { font-size: 14px; font-weight: 400; color: var(--text-dim); font-variant-numeric: tabular-nums; margin-left: 10px; }
+.controls-left, .controls-right { display: flex; align-items: center; gap: 2px; }
+
+/* Vertical rule between left / right groups */
+.controls-left  { border-right: 1px solid rgba(255,255,255,0.06); padding-right: 10px; margin-right: 6px; }
+.controls-right { border-left:  1px solid rgba(255,255,255,0.06); padding-left:  10px; margin-left:  6px; }
+
+/* ─── Icon Button ─────────────────────────────────────────────────── */
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.62);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
+  border-radius: 12px;
+  transition: background 0.14s ease, color 0.14s ease, transform 0.14s ease, box-shadow 0.14s ease;
+  position: relative;
+}
+.icon-btn:hover {
+  background: rgba(0, 240, 255, 0.10);
+  color: var(--primary);
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: 0 4px 14px rgba(0, 240, 255, 0.18);
+}
+.icon-btn:active  { transform: scale(0.92); box-shadow: none; }
+.icon-btn.active  { color: var(--primary); }
+.icon-btn span    { font-size: 22px; }
+
+.text-btn { font-family: var(--font-main); font-size: 13px; font-weight: 700; padding: 7px 10px; letter-spacing: 0.3px; }
+
+.time-display {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.48);
+  font-variant-numeric: tabular-nums;
+  padding: 0 6px;
+  white-space: nowrap;
+}
 .volume-group { display: flex; align-items: center; }
 .volume-slider-container { width: 0; overflow: hidden; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; }
-.volume-group:hover .volume-slider-container { width: 80px; }
-#volume-slider { width: 70px; margin-left: 10px; accent-color: var(--primary); cursor: pointer; }
+.volume-group:hover .volume-slider-container { width: 76px; }
+#volume-slider { width: 66px; margin-left: 8px; accent-color: var(--primary); cursor: pointer; }
 
 #btn-subtitle.active { color: var(--primary); }
 #btn-subtitle.active span { font-variation-settings: 'FILL' 1; }

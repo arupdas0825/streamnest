@@ -110,6 +110,8 @@ export class UIController {
     this.btnPrevEp = document.getElementById('btn-prev-ep');
     this.btnNextEp = document.getElementById('btn-next-ep');
     this.btnPlaylist = document.getElementById('btn-playlist');
+    this.btnRewind  = document.getElementById('btn-rewind');
+    this.btnForward = document.getElementById('btn-forward');
 
     // Audio Tracks Elements
     this.btnAudioTracks = document.getElementById('btn-audio-tracks');
@@ -497,6 +499,22 @@ export class UIController {
       });
     }
 
+    // Rewind 10s
+    if (this.btnRewind) {
+      this.btnRewind.addEventListener('click', () => {
+        this.vc.seek(Math.max(0, this.vc.state.currentTime - 10));
+        this.showFeedback('⏪ -10s');
+      });
+    }
+
+    // Forward 10s
+    if (this.btnForward) {
+      this.btnForward.addEventListener('click', () => {
+        this.vc.seek(Math.min(this.vc.state.duration || 0, this.vc.state.currentTime + 10));
+        this.showFeedback('⏩ +10s');
+      });
+    }
+
     // React Navigation Bindings
     window.addEventListener('sn-play-episode', (e) => {
       if (e.detail && e.detail.index !== undefined) {
@@ -598,45 +616,61 @@ export class UIController {
     }
     
     document.addEventListener('keydown', (e) => {
+      // ── Always block Space from clicking focused buttons ──
+      // ROOT CAUSE FIX: without this, a focused btn-back fires sn-close-player
+      if (e.key === ' ' &&
+          e.target.tagName !== 'INPUT' &&
+          e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+      }
+
       if (this.landing.classList.contains('active')) return;
-      if (e.target.tagName === 'INPUT') return; // Don't trigger if typing in settings
-      switch(e.key.toLowerCase()) {
+      if (e.target.tagName === 'INPUT') return;
+
+      switch (e.key.toLowerCase()) {
         case ' ':
-        case 'k': e.preventDefault(); this.vc.togglePlay(); break;
-        case 'arrowright': this.vc.seek(this.vc.state.currentTime + 5); break;
-        case 'arrowleft': this.vc.seek(this.vc.state.currentTime - 5); break;
-        case 'arrowup': 
+        case 'k':
+          this.vc.togglePlay();
+          break;
+
+        case 'arrowright':
           e.preventDefault();
-          if (this.mouseXPercent < 0.35) {
-            this.volumeSlider.value = Math.min(1, parseFloat(this.volumeSlider.value) + 0.05);
-            this.volumeSlider.dispatchEvent(new Event('input'));
-            this.showFeedback(`≡ƒöè ${Math.round(this.volumeSlider.value * 100)}%`);
-          } else if (this.mouseXPercent > 0.65) {
+          this.vc.seek(Math.min(this.vc.state.duration || 0, this.vc.state.currentTime + 10));
+          this.showFeedback('⏩ +10s');
+          break;
+
+        case 'arrowleft':
+          e.preventDefault();
+          this.vc.seek(Math.max(0, this.vc.state.currentTime - 10));
+          this.showFeedback('⏪ -10s');
+          break;
+
+        case 'arrowup':
+          e.preventDefault();
+          if (this.mouseXPercent > 0.65) {
             this.vc.state.brightness = Math.min(2, (this.vc.state.brightness || 1) + 0.1);
             this.vc.setBrightness(this.vc.state.brightness);
-            this.showFeedback(`ΓÿÇ∩╕Å ${Math.round(this.vc.state.brightness * 100)}%`);
+            this.showFeedback('☀️ ' + Math.round(this.vc.state.brightness * 100) + '%');
           } else {
             this.volumeSlider.value = Math.min(1, parseFloat(this.volumeSlider.value) + 0.05);
             this.volumeSlider.dispatchEvent(new Event('input'));
-            this.showFeedback(`≡ƒöè ${Math.round(this.volumeSlider.value * 100)}%`);
+            this.showFeedback('🔊 ' + Math.round(this.volumeSlider.value * 100) + '%');
           }
           break;
+
         case 'arrowdown':
           e.preventDefault();
-          if (this.mouseXPercent < 0.35) {
-            this.volumeSlider.value = Math.max(0, parseFloat(this.volumeSlider.value) - 0.05);
-            this.volumeSlider.dispatchEvent(new Event('input'));
-            this.showFeedback(`≡ƒöè ${Math.round(this.volumeSlider.value * 100)}%`);
-          } else if (this.mouseXPercent > 0.65) {
+          if (this.mouseXPercent > 0.65) {
             this.vc.state.brightness = Math.max(0.1, (this.vc.state.brightness || 1) - 0.1);
             this.vc.setBrightness(this.vc.state.brightness);
-            this.showFeedback(`ΓÿÇ∩╕Å ${Math.round(this.vc.state.brightness * 100)}%`);
+            this.showFeedback('☀️ ' + Math.round(this.vc.state.brightness * 100) + '%');
           } else {
             this.volumeSlider.value = Math.max(0, parseFloat(this.volumeSlider.value) - 0.05);
             this.volumeSlider.dispatchEvent(new Event('input'));
-            this.showFeedback(`≡ƒöè ${Math.round(this.volumeSlider.value * 100)}%`);
+            this.showFeedback('🔊 ' + Math.round(this.volumeSlider.value * 100) + '%');
           }
           break;
+
         case 'f': this.vc.toggleFullscreen(this.playerContainer); break;
         case 'm': this.btnMute.click(); break;
         case 't': window.dispatchEvent(new CustomEvent('sn-toggle-theater')); break;

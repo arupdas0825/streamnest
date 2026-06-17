@@ -3,10 +3,7 @@ import * as THREE from 'three';
 
 /**
  * DottedSurface — Three.js animated dotted wave background.
- *
- * Adapted from the shadcn/TSX version to plain React JSX for the
- * Vite-based StreamNest project. next-themes and TypeScript removed.
- * Colors tuned to StreamNest's cyan / blue / purple palette.
+ * StreamNest edition: vivid cyan/blue/purple palette, tuned for dark backgrounds.
  */
 export function DottedSurface({ className = '', style = {}, ...props }) {
   const containerRef = useRef(null);
@@ -15,13 +12,13 @@ export function DottedSurface({ className = '', style = {}, ...props }) {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // ── Grid density — reduced on mobile for performance ─────────────
     const isMobile = window.innerWidth < 768;
     const isTablet = window.innerWidth < 1200;
 
-    const SEPARATION = isMobile ? 190 : isTablet ? 165 : 148;
-    const AMOUNTX  = isMobile ? 22  : isTablet ? 30  : 38;
-    const AMOUNTY  = isMobile ? 28  : isTablet ? 38  : 50;
+    // Grid density — reduced on smaller screens for GPU performance
+    const SEPARATION = isMobile ? 185 : isTablet ? 160 : 145;
+    const AMOUNTX   = isMobile ? 24  : isTablet ? 32  : 42;
+    const AMOUNTY   = isMobile ? 30  : isTablet ? 40  : 54;
 
     // ── Scene ─────────────────────────────────────────────────────────
     const scene = new THREE.Scene();
@@ -32,64 +29,61 @@ export function DottedSurface({ className = '', style = {}, ...props }) {
       1,
       10000,
     );
-    camera.position.set(0, 355, 1220);
+    camera.position.set(0, 360, 1240);
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: !isMobile });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1 : 1.5));
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: !isMobile,
+      powerPreference: 'high-performance',
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.0 : 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0); // fully transparent bg
+    renderer.setClearColor(0x000000, 0); // transparent canvas
 
     containerRef.current.appendChild(renderer.domElement);
 
     // ── Geometry ──────────────────────────────────────────────────────
-    const geometry = new THREE.BufferGeometry();
     const totalPoints = AMOUNTX * AMOUNTY;
+    const positions   = new Float32Array(totalPoints * 3);
+    const colors      = new Float32Array(totalPoints * 3);
 
-    const positions = new Float32Array(totalPoints * 3);
-    const colors    = new Float32Array(totalPoints * 3);
-
-    // StreamNest palette anchors (r,g,b normalized 0-1)
-    // We use a subtle gradient across the grid:
-    //   top-left  → deep cyan   (#00c8ff  → 0, 0.78, 1)
-    //   top-right → blue        (#3b82f6  → 0.23, 0.51, 0.96)
-    //   bottom    → purple      (#7c3aed  → 0.49, 0.23, 0.93)
-    let i = 0;
+    // StreamNest palette: vivid cyan → blue → purple, front-to-back gradient
+    // All values are 0-1 normalized for THREE.BufferAttribute with vertexColors
+    let idx = 0;
     for (let ix = 0; ix < AMOUNTX; ix++) {
       for (let iy = 0; iy < AMOUNTY; iy++) {
-        const x = ix * SEPARATION - (AMOUNTX * SEPARATION) / 2;
-        const z = iy * SEPARATION - (AMOUNTY * SEPARATION) / 2;
+        positions[idx * 3]     = ix * SEPARATION - (AMOUNTX * SEPARATION) / 2;
+        positions[idx * 3 + 1] = 0; // Y animated per frame
+        positions[idx * 3 + 2] = iy * SEPARATION - (AMOUNTY * SEPARATION) / 2;
 
-        positions[i * 3]     = x;
-        positions[i * 3 + 1] = 0; // Y animated each frame
-        positions[i * 3 + 2] = z;
+        // Front (iy=0): pure cyan  #00e8ff → (0.0, 0.91, 1.0)
+        // Back  (iy=1): purple     #7928ca → (0.47, 0.16, 0.79)
+        // Left-to-right: slight blue shift
+        const tz = iy  / (AMOUNTY - 1); // 0 (front) → 1 (back)
+        const tx = ix  / (AMOUNTX - 1); // 0 (left)  → 1 (right)
 
-        // Blend color across the grid
-        const tx = ix / AMOUNTX;         // 0 → 1 left-to-right
-        const ty = iy / AMOUNTY;         // 0 → 1 front-to-back
+        const r = 0.0  + tz * 0.47 + tx * 0.10;
+        const g = 0.91 - tz * 0.75 + tx * 0.02;
+        const b = 1.0  - tz * 0.21 - tx * 0.04;
 
-        // Cyan (#00f0ff) → Blue (#3b82f6) horizontally
-        // mixed with Purple (#7c3aed) → Cyan vertically
-        const r = 0.0  + tx * 0.23 + ty * 0.20;   // stays low → muted
-        const g = 0.78 * (1 - tx) * (1 - ty * 0.5) + 0.51 * tx * 0.6;
-        const b = 1.0  - ty * 0.10 - tx * 0.06;
+        colors[idx * 3]     = Math.max(0, Math.min(1, r));
+        colors[idx * 3 + 1] = Math.max(0, Math.min(1, g));
+        colors[idx * 3 + 2] = Math.max(0, Math.min(1, b));
 
-        colors[i * 3]     = Math.min(r, 1);
-        colors[i * 3 + 1] = Math.min(g, 1);
-        colors[i * 3 + 2] = Math.min(b, 1);
-
-        i++;
+        idx++;
       }
     }
 
+    const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('color',    new THREE.BufferAttribute(colors,    3));
 
     // ── Material ──────────────────────────────────────────────────────
     const material = new THREE.PointsMaterial({
-      size: isMobile ? 5 : 7,
+      size: isMobile ? 8 : 13,          // visible dot size
       vertexColors: true,
       transparent: true,
-      opacity: isMobile ? 0.45 : 0.60,
+      opacity: isMobile ? 0.72 : 0.88,  // high enough to see on dark bg
       sizeAttenuation: true,
       depthWrite: false,
     });
@@ -106,41 +100,39 @@ export function DottedSurface({ className = '', style = {}, ...props }) {
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
-      let idx = 0;
+      let i = 0;
       for (let ix = 0; ix < AMOUNTX; ix++) {
         for (let iy = 0; iy < AMOUNTY; iy++) {
-          posArr[idx * 3 + 1] =
-            Math.sin((ix + count) * 0.28) * 55 +
-            Math.sin((iy + count) * 0.45) * 45;
-          idx++;
+          // Overlapping sine waves → rolling ocean-like surface
+          posArr[i * 3 + 1] =
+            Math.sin((ix + count) * 0.26) * 58 +
+            Math.sin((iy + count) * 0.42) * 48;
+          i++;
         }
       }
 
       posAttr.needsUpdate = true;
       renderer.render(scene, camera);
-      count += 0.07; // slightly slower → cinematic feel
+      count += 0.065; // cinematic, unhurried pace
     };
 
     animate();
 
-    // ── Resize handler ────────────────────────────────────────────────
-    const handleResize = () => {
+    // ── Resize ────────────────────────────────────────────────────────
+    const onResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', onResize);
 
-    // Store refs for cleanup
     sceneRef.current = { scene, camera, renderer, points, animationId };
 
     // ── Cleanup ───────────────────────────────────────────────────────
     return () => {
-      window.removeEventListener('resize', handleResize);
-
+      window.removeEventListener('resize', onResize);
       if (sceneRef.current) {
         cancelAnimationFrame(sceneRef.current.animationId);
-
         sceneRef.current.scene.traverse((obj) => {
           if (obj instanceof THREE.Points) {
             obj.geometry.dispose();
@@ -151,20 +143,17 @@ export function DottedSurface({ className = '', style = {}, ...props }) {
             }
           }
         });
-
         sceneRef.current.renderer.dispose();
-
         if (
           containerRef.current &&
           sceneRef.current.renderer.domElement.parentNode === containerRef.current
         ) {
           containerRef.current.removeChild(sceneRef.current.renderer.domElement);
         }
-
         sceneRef.current = null;
       }
     };
-  }, []); // runs once on mount — theme is always dark in StreamNest
+  }, []);
 
   return (
     <div
