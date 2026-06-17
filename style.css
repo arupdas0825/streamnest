@@ -373,35 +373,29 @@ body {
   height: 103.5px;
 }
 
-/* ─── Premium Floating Dock ───────────────────────────────────────── */
-.controls-row {
+/* ─── Unified Glass Dock ───────────────────────────────────────── */
+.dock {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background: rgba(6, 6, 14, 0.80);
+  gap: 8px;
+  background: rgba(6, 6, 14, 0.82);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 20px;
-  padding: 6px 14px;
+  padding: 8px 14px;
   box-shadow:
     0 14px 44px rgba(0, 0, 0, 0.72),
     0 1px 0 rgba(255, 255, 255, 0.05) inset,
     0 0 0 0.5px rgba(255, 255, 255, 0.03) inset;
   transition: box-shadow 0.35s ease;
 }
-.controls-row:hover {
+.dock:hover {
   box-shadow:
     0 14px 44px rgba(0, 0, 0, 0.72),
     0 1px 0 rgba(255, 255, 255, 0.07) inset,
     0 0 40px rgba(0, 240, 255, 0.06);
 }
-
-.controls-left, .controls-right { display: flex; align-items: center; gap: 2px; }
-
-/* Vertical rule between left / right groups */
-.controls-left  { border-right: 1px solid rgba(255,255,255,0.06); padding-right: 10px; margin-right: 6px; }
-.controls-right { border-left:  1px solid rgba(255,255,255,0.06); padding-left:  10px; margin-left:  6px; }
 
 /* ─── Icon Button ─────────────────────────────────────────────────── */
 .icon-btn {
@@ -429,14 +423,50 @@ body {
 
 .text-btn { font-family: var(--font-main); font-size: 13px; font-weight: 700; padding: 7px 10px; letter-spacing: 0.3px; }
 
-.time-display {
+/* ─── Dock Three-Column Layout ─────────────────────────────────── */
+.dock-left,
+.dock-right { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.dock-left  { border-right: 1px solid rgba(255,255,255,0.06); padding-right: 10px; margin-right: 4px; }
+.dock-right { border-left:  1px solid rgba(255,255,255,0.06); padding-left:  10px; margin-left:  4px; }
+
+.dock-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Inline scrubber fills dock-center */
+.dock-center .progress-container {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.dock-time {
   font-size: 12px;
   font-weight: 500;
   color: rgba(255,255,255,0.48);
   font-variant-numeric: tabular-nums;
-  padding: 0 6px;
   white-space: nowrap;
+  flex-shrink: 0;
+  user-select: none;
 }
+
+/* Highlighted circular play button */
+.dock-play {
+  background: rgba(0, 240, 255, 0.12);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+}
+.icon-btn.dock-play:hover {
+  background: rgba(0, 240, 255, 0.24);
+  transform: scale(1.1);
+  box-shadow: 0 0 22px rgba(0, 240, 255, 0.30);
+}
+.dock-play span { font-size: 24px; }
 .volume-group { display: flex; align-items: center; }
 .volume-slider-container { width: 0; overflow: hidden; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; }
 .volume-group:hover .volume-slider-container { width: 76px; }
@@ -507,25 +537,16 @@ body {
   .controls-overlay {
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  .controls-row {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
+  /* Mobile dock: compress and hide non-essential buttons */
+  .dock {
+    padding: 7px 10px;
+    gap: 4px;
+    border-radius: 16px;
   }
-  .controls-left, .controls-right {
-    justify-content: space-around;
-    width: 100%;
-    margin-bottom: 5px;
-  }
-  .volume-group {
-    display: none; /* Rely on device volume or swipe on mobile */
-  }
-  .time-display {
-    width: 100%;
-    text-align: center;
-    font-size: 16px;
-    margin-left: 0;
-  }
+  .dock-center { gap: 6px; }
+  .dock-time { font-size: 11px; }
+  .volume-group { display: none; }
+  #btn-screenshot, #btn-pip { display: none !important; }
   .icon-btn span {
     font-size: 32px;
   }

@@ -77,8 +77,8 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
 
   return (
     <>
-      {/* Animated dotted wave background — always behind all content */}
-      <DottedSurface />
+      {/* DottedSurface — landing/mini only. Unmounted during active playback to free GPU */}
+      {viewMode !== 'full' && <DottedSurface />}
       {viewMode === 'full' && (
         <>
           <AmbientTheater videoElement={videoCore.video} isActive={true} />
