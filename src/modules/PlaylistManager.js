@@ -1,5 +1,6 @@
 import { parseEpisode } from '../utils/episodeParser.js';
 import { PlaybackManager } from './PlaybackManager.js';
+import { SkipTimingManager } from '../utils/SkipTimingManager.js';
 
 export class PlaylistManager {
   constructor(uiController) {
@@ -24,6 +25,43 @@ export class PlaylistManager {
     // Extract subtitle files
     const subtitles = fileList.filter(f => f.name.endsWith('.srt') || f.name.endsWith('.vtt'));
     this.subFiles = [...this.subFiles, ...subtitles];
+
+    // Extract JSON files for skip timings
+    const jsonFiles = fileList.filter(f => f.name.endsWith('.json'));
+    jsonFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          Object.keys(data).forEach(filename => {
+            const epTimings = data[filename];
+            if (epTimings && (epTimings.introStart !== undefined || epTimings.recapStart !== undefined)) {
+              // Store directly under filename fallback so it can be resolved during playback
+              localStorage.setItem(`sn-timings-by-name-${filename}`, JSON.stringify(epTimings));
+              
+              // Also sync immediately if this episode is already loaded
+              if (this.currentIndex !== -1 && this.episodes[this.currentIndex]) {
+                const currentEp = this.episodes[this.currentIndex];
+                if (currentEp.name === filename) {
+                  SkipTimingManager.saveTimings(currentEp.id, epTimings);
+                  window.dispatchEvent(new CustomEvent('sn-skip-timings-change', {
+                    detail: { mediaId: currentEp.id, timings: epTimings }
+                  }));
+                  
+                  if (this.ui.timingRecapStart) this.ui.timingRecapStart.value = epTimings.recapStart || '';
+                  if (this.ui.timingRecapEnd) this.ui.timingRecapEnd.value = epTimings.recapEnd || '';
+                  if (this.ui.timingIntroStart) this.ui.timingIntroStart.value = epTimings.introStart || '';
+                  if (this.ui.timingIntroEnd) this.ui.timingIntroEnd.value = epTimings.introEnd || '';
+                }
+              }
+            }
+          });
+        } catch (err) {
+          console.error("Failed to parse timings JSON", err);
+        }
+      };
+      reader.readAsText(file);
+    });
 
     if (videoFiles.length === 0) return [];
 

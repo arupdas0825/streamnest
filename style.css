@@ -43,7 +43,7 @@ body {
 #landing-screen {
   position: absolute;
   inset: 0;
-  display: flex;
+  display: none;
   flex-direction: column; /* Added for vertical layout */
   align-items: center;
   justify-content: flex-start; /* Start from top to allow scrolling */
@@ -55,7 +55,11 @@ body {
   transition: opacity 0.5s ease;
   overflow-y: auto; /* Enable scrolling for history list */
 }
-#landing-screen.active { opacity: 1; pointer-events: all; }
+#landing-screen.active { 
+  opacity: 1; 
+  pointer-events: all; 
+  display: flex;
+}
 
 /* Very subtle dark vignette — readable content without hiding Three.js dots */
 #landing-screen::before {
@@ -158,41 +162,114 @@ body {
 /* Redundant Continue Watching styles removed as they are now handled by Tailwind in React components */
 
 #drop-zone {
+  position: relative;
   width: 500px;
   height: 300px;
-  background: var(--glass-bg);
-  border: 2px dashed var(--glass-border);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
   transform-style: preserve-3d;
-  transition: transform 0.1s ease-out, border-color 0.3s, background 0.3s, box-shadow 0.3s;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.02);
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s, background 0.3s, box-shadow 0.3s;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
 }
-#drop-zone.dragover { border-color: var(--primary); background: rgba(0, 240, 255, 0.05); box-shadow: 0 0 40px var(--primary-glow); }
-.drop-icon { font-size: 48px; color: var(--primary); margin-bottom: 1rem; }
-#drop-zone h3 { font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 500; }
-#drop-zone p { color: var(--text-dim); margin-bottom: 2rem; }
+
+/* Toned-down subtle spotlight glow tracking */
+#drop-zone::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: radial-gradient(
+    400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(0, 240, 255, 0.08) 0%,
+    rgba(255, 0, 85, 0.02) 40%,
+    transparent 80%
+  );
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Subtle premium reflection overlay */
+#drop-zone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    200px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 60%
+  );
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+#drop-zone:hover::before,
+#drop-zone:hover::after {
+  opacity: 1;
+}
+
+#drop-zone.dragover { 
+  border-color: var(--primary); 
+  background: rgba(0, 240, 255, 0.05); 
+  box-shadow: 0 0 45px rgba(0, 240, 255, 0.15); 
+}
+
+#drop-zone > * {
+  position: relative;
+  z-index: 10;
+}
+
+.drop-icon { font-size: 48px; color: var(--primary); margin-bottom: 1rem; filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.2)); }
+#drop-zone h3 { font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 500; letter-spacing: -0.5px; }
+#drop-zone p { color: var(--text-dim); margin-bottom: 2rem; font-size: 0.95rem; }
 
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, rgba(0, 200, 255, 0.8) 100%);
   color: #000;
   padding: 12px 28px;
   border-radius: 12px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 15px var(--primary-glow);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3), 0 0 0 1px rgba(0, 240, 255, 0.1);
   display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--primary-glow); }
+.btn-primary:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 8px 25px rgba(0, 240, 255, 0.5), 0 0 15px rgba(0, 240, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
 .btn-primary input { display: none; }
 
-#player-screen { position: absolute; inset: 0; background: transparent; opacity: 1; pointer-events: all; display: flex; align-items: center; justify-content: center; }
+/* Hide player screen fully by default to avoid overlay on landing page */
+#player-screen { 
+  position: absolute; 
+  inset: 0; 
+  background: #000; 
+  opacity: 0; 
+  pointer-events: none; 
+  display: none; 
+  align-items: center; 
+  justify-content: center;
+  z-index: 150;
+  transition: opacity 0.5s ease;
+}
+#player-screen.active {
+  opacity: 1;
+  pointer-events: all;
+  display: flex;
+}
 .video-container { width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
 #main-video { width: 100%; height: 100%; object-fit: contain; }
 

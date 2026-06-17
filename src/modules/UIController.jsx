@@ -587,6 +587,26 @@ export class UIController {
 
     this.landingFileInput.addEventListener('click', () => { this.landingFileInput.value = ''; });
     this.landingFileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
+    
+    // Spotlight and 3D Tilt mouse movements
+    this.dropZone.addEventListener('mousemove', (e) => {
+      const rect = this.dropZone.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      this.dropZone.style.setProperty('--mouse-x', `${x}px`);
+      this.dropZone.style.setProperty('--mouse-y', `${y}px`);
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = (centerY - y) / 18;
+      const rotateY = (x - centerX) / 25;
+      this.dropZone.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.01)`;
+    });
+
+    this.dropZone.addEventListener('mouseleave', () => {
+      this.dropZone.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+    });
+
     this.dropZone.addEventListener('dragover', (e) => { e.preventDefault(); this.dropZone.classList.add('dragover'); });
     this.dropZone.addEventListener('dragleave', () => this.dropZone.classList.remove('dragover'));
     this.dropZone.addEventListener('drop', (e) => {

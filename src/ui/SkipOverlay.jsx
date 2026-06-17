@@ -42,6 +42,9 @@ const SkipOverlay = ({ videoCore }) => {
     activeEpisodeRef.current = currentEpisodeIndex;
     setShowSkipRecap(false);
     setShowSkipIntro(false);
+    
+    // Clean timings immediately on episode change to prevent leaking/reusing old values
+    setTimings({ recapStart: 0, recapEnd: 0, introStart: 0, introEnd: 0 });
 
     const video = videoCore.video;
     if (!video || playlist.length === 0 || currentEpisodeIndex === -1) return;
@@ -50,7 +53,7 @@ const SkipOverlay = ({ videoCore }) => {
     if (!currentEpisode) return;
 
     const loadTimings = () => {
-      const t = SkipTimingManager.getTimings(currentEpisode.id, video.duration);
+      const t = SkipTimingManager.getTimings(currentEpisode.id, video.duration, currentEpisode.name);
       setTimings(t);
     };
 

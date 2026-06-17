@@ -11,9 +11,10 @@ export class SkipTimingManager {
    * Get timings for a specific media item
    * @param {string} mediaId 
    * @param {number} duration - Current video duration in seconds
+   * @param {string} fileName - Optional filename for fallback lookup
    * @returns {Object} { recapStart, recapEnd, introStart, introEnd }
    */
-  static getTimings(mediaId, duration) {
+  static getTimings(mediaId, duration, fileName = '') {
     if (!mediaId) return this.getDefaults(duration);
 
     try {
@@ -25,6 +26,20 @@ export class SkipTimingManager {
           introStart: Number(allTimings[mediaId].introStart ?? 0),
           introEnd: Number(allTimings[mediaId].introEnd ?? 0)
         };
+      }
+
+      // Fallback: check by filename in localStorage
+      if (fileName) {
+        const byName = localStorage.getItem(`sn-timings-by-name-${fileName}`);
+        if (byName) {
+          const parsed = JSON.parse(byName);
+          return {
+            recapStart: Number(parsed.recapStart ?? 0),
+            recapEnd: Number(parsed.recapEnd ?? 0),
+            introStart: Number(parsed.introStart ?? 0),
+            introEnd: Number(parsed.introEnd ?? 0)
+          };
+        }
       }
     } catch (e) {
       console.warn('SkipTimingManager: Failed to get saved timings', e);
@@ -78,23 +93,9 @@ export class SkipTimingManager {
   }
 
   /**
-   * Generate smart, standard defaults for episodes
-   * Recap: 0 to 20 seconds
-   * Intro: 30 to 85 seconds
-   * Ignores short clips (< 2 minutes)
+   * Return zeros as defaults so we do NOT fake intro/recap timing.
    */
   static getDefaults(duration) {
-    // If the video is extremely short (e.g. trailers/clips), do not apply defaults
-    if (!duration || duration < 120) {
-      return { recapStart: 0, recapEnd: 0, introStart: 0, introEnd: 0 };
-    }
-
-    // Standard high-quality defaults matching typical TV shows
-    return {
-      recapStart: 0,
-      recapEnd: 20,
-      introStart: 30,
-      introEnd: 85
-    };
+    return { recapStart: 0, recapEnd: 0, introStart: 0, introEnd: 0 };
   }
 }
