@@ -48,7 +48,7 @@ body {
   align-items: center;
   justify-content: flex-start; /* Start from top to allow scrolling */
   padding: 40px 20px;
-  background: radial-gradient(circle at 50% 30%, #1a1a24 0%, var(--bg-color) 100%);
+  background: transparent;
   z-index: 100;
   opacity: 0;
   pointer-events: none;
@@ -56,6 +56,16 @@ body {
   overflow-y: auto; /* Enable scrolling for history list */
 }
 #landing-screen.active { opacity: 1; pointer-events: all; }
+
+/* Subtle dark vignette overlay — keeps content readable over the animated dots */
+#landing-screen::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, rgba(5, 5, 20, 0.55) 0%, rgba(5, 5, 12, 0.85) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
 
 .video-container.is-mini {
   width: 100% !important;

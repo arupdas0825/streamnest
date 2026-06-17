@@ -6,6 +6,7 @@ import EpisodesDrawer from './EpisodesDrawer.jsx';
 import AudioTracksDrawer from './AudioTracksDrawer.jsx';
 import NextEpisodeOverlay from './NextEpisodeOverlay.jsx';
 import SkipOverlay from './SkipOverlay.jsx';
+import DottedSurface from './DottedSurface.jsx';
 
 const GlobalPlayerContent = ({ videoCore, uiController }) => {
   const { viewMode, videoTitle, isTheaterMode, expand, close, setViewMode, toggleTheater, openFull, minimize } = usePlayerContext();
@@ -76,6 +77,8 @@ const GlobalPlayerContent = ({ videoCore, uiController }) => {
 
   return (
     <>
+      {/* Animated dotted wave background — always behind all content */}
+      <DottedSurface />
       {viewMode === 'full' && (
         <>
           <AmbientTheater videoElement={videoCore.video} isActive={true} />
