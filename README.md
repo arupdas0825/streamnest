@@ -229,7 +229,8 @@ streamnest/
 ## 📸 Screenshots
 
 ### Landing Page
-<img width="1600" alt="StreamNest Landing Page" src="https://github.com/user-attachments/assets/352df6d7-61f5-487c-9467-bcabbc23fafe" />
+<img width="1888" height="846" alt="image" src="https://github.com/user-attachments/assets/29bcf2dd-3402-48f7-9957-abbd5882284d" />
+
 
 *Cinematic drop zone with interactive particles, 3D tilt effect, and animated branding.*
 
